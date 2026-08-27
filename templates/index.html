@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Manager & Email Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --primary: #4ade80;
+            --danger: #f87171;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .left-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .right-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--primary);
+            color: #064e3b;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        button.danger {
+            background: var(--danger);
+            color: #450a0a;
+        }
+
+        button.danger:hover {
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .generated-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .generated-list div {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .status-badge.active {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--primary);
+        }
+
+        .otp-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .otp-code {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 4px;
+        }
+
+        .otp-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sender {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .time {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #94a3b8;
+            padding: 3rem 0;
+            font-style: italic;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Left Column: Controls -->
+    <div class="left-col">
+        
+        <!-- Email Monitor Setup -->
+        <div class="glass-panel">
+            <h2>Live OTP Monitor</h2>
+            <div id="monitorStatus" class="status-badge">Status: Stopped</div>
+            
+            <div class="form-group">
+                <label>Gmail Address</label>
+                <input type="email" id="monitorEmail" placeholder="your@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>App Password (16 chars)</label>
+                <input type="password" id="monitorPassword" placeholder="abcd efgh ijkl mnop">
+            </div>
+            <button id="startBtn" onclick="toggleMonitor()">Start Monitoring</button>
+        </div>
+
+        <!-- Dot Trick Generator -->
+        <div class="glass-panel">
+            <h2>Create Emails (Dot Trick)</h2>
+            <div class="form-group">
+                <label>Base Gmail Address</label>
+                <input type="email" id="baseEmail" placeholder="example@gmail.com">
+            </div>
+            <button onclick="generateEmails()">Generate Emails</button>
+            
+            <div class="generated-list" id="emailList" style="display: none;">
+                <!-- Emails will populate here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column: Dashboard -->
+    <div class="right-col glass-panel" style="overflow-y: auto;">
+        <h2>Recent OTP Codes</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-top: -10px; margin-bottom: 2rem;">Real-time incoming codes will appear here</p>
+        
+        <div id="otpContainer">
+            <div class="empty-state">No OTPs received yet. Start monitoring and wait for emails.</div>
+        </div>
+    </div>
+
+    <script>
+        let pollInterval;
+        let isRunning = false;
+        
+        // Array to keep track of OTPs on the frontend now
+        let allOtps = [];
+
+        async function toggleMonitor() {
+            const btn = document.getElementById('startBtn');
+            const status = document.getElementById('monitorStatus');
+            const email = document.getElementById('monitorEmail').value;
+            const password = document.getElementById('monitorPassword').value;
+
+            if (!isRunning) {
+                if (!email || !password) return alert('Please enter email and app password');
+                
+                isRunning = true;
+                btn.innerText = 'Stop Monitoring';
+                btn.classList.add('danger');
+                status.innerText = 'Status: Active (Checking every 5s)';
+                status.classList.add('active');
+                
+                // Immediately check once, then set interval
+                checkEmails(email, password);
+                pollInterval = setInterval(() => checkEmails(email, password), 5000);
+            } else {
+                isRunning = false;
+                btn.innerText = 'Start Monitoring';
+                btn.classList.remove('danger');
+                status.innerText = 'Status: Stopped';
+                status.classList.remove('active');
+                clearInterval(pollInterval);
+            }
+        }
+
+        async function generateEmails() {
+            const email = document.getElementById('baseEmail').value;
+            if (!email) return;
+
+            const res = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            });
+            
+            const data = await res.json();
+            const list = document.getElementById('emailList');
+            list.innerHTML = '';
+            
+            data.emails.forEach(e => {
+                const div = document.createElement('div');
+                div.innerText = e;
+                list.appendChild(div);
+            });
+            list.style.display = 'block';
+        }
+
+        async function checkEmails(email, password) {
+            try {
+                const res = await fetch('/api/check_emails', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                
+                const data = await res.json();
+                
+                if (data.status === 'success' && data.otps.length > 0) {
+                    // Prepend new OTPs
+                    allOtps = [...data.otps, ...allOtps];
+                    renderOtps();
+                }
+            } catch (err) {
+                console.error("Error checking emails:", err);
+            }
+        }
+        
+        function renderOtps() {
+            const container = document.getElementById('otpContainer');
+            if (allOtps.length > 0) {
+                container.innerHTML = '';
+                allOtps.forEach(item => {
+                    container.innerHTML += `
+                        <div class="otp-card">
+                            <div class="otp-meta">
+                                <div class="sender">${item.sender}</div>
+                                <div class="time">${item.time}</div>
+                            </div>
+                            <div class="otp-code">${item.otp}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
