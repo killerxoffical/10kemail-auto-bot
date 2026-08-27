@@ -367,18 +367,42 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.14); transform: translateY(-2px); }
         .btn-danger { background: var(--rose); color: white; box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4); }
 
-        /* Generated Alias Cards Grid */
+        /* FIXED PC DESKTOP & MOBILE ALIAS CARDS GRID (COMPACT COMPONENT LAYOUT) */
         .alias-grid-container {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;
-            margin-top: 0.5rem; width: 100%; flex: 1; overflow-y: auto; padding-right: 0.25rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem;
+            align-content: start; width: 100%; flex: 1; overflow-y: auto; padding-right: 0.25rem;
         }
         .alias-card-item {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 16px;
-            padding: 0.85rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.65rem;
-            cursor: pointer; transition: all 0.25s ease;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 18px;
+            padding: 0.95rem 1.1rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.65rem;
+            cursor: pointer; transition: all 0.25s ease; height: fit-content; min-height: 90px;
         }
         .alias-card-item:hover {
             background: rgba(255,255,255,0.08); transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .copy-btn-chip {
+            background: rgba(99, 102, 241, 0.18); border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #a5b4fc; font-size: 0.725rem; font-weight: 700; padding: 0.3rem 0.65rem;
+            border-radius: 99px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;
+            transition: all 0.2s ease;
+        }
+        .copy-btn-chip:hover { background: var(--accent); color: white; }
+
+        /* DYNAMIC DIGITS BOX STYLING FOR OTP CODES */
+        .otp-boxes-wrap {
+            display: inline-flex; align-items: center; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin: 0.4rem 0;
+        }
+        .otp-digit-box {
+            width: 38px; height: 46px; border-radius: 12px;
+            background: rgba(99, 102, 241, 0.15); border: 1.5px solid rgba(99, 102, 241, 0.45);
+            color: white; font-weight: 800; font-size: 1.4rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+            transition: all 0.25s ease;
+        }
+        .otp-digit-box.empty {
+            opacity: 0.35; border-style: dashed;
         }
 
         /* Inbox Status Indicator */
@@ -404,17 +428,12 @@
             gap: 1rem;
         }
         .otp-card-item:hover { background: rgba(255,255,255,0.08); transform: translateX(4px); }
-        .otp-code-badge {
-            font-size: 1.75rem; font-weight: 800; color: var(--accent); letter-spacing: 4px;
-            background: rgba(99, 102, 241, 0.14); padding: 0.35rem 0.9rem; border-radius: 14px; border: 1px dashed rgba(99, 102, 241, 0.4);
-            flex-shrink: 0; text-align: center;
-        }
 
         /* MOBILE BOTTOM NAVIGATION BAR */
         .mobile-bottom-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 998;
             background: rgba(15, 23, 42, 0.95); border-top: 1px solid var(--panel-border);
-            backdrop-filter: blur(20px); padding: 0.6rem 1rem; justify-content: space-around; align-items: center;
+            backdrop-filter: blur(20px); padding: 0.6rem 1rem; justify-space-around; align-items: center;
         }
         .mobile-nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 0.2rem; background: none;
@@ -580,7 +599,6 @@
             .section-title { font-size: 1.15rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 0.5rem; }
             
             .otp-card-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0.95rem; border-radius: 16px; }
-            .otp-code-badge { font-size: 1.6rem; width: 100%; text-align: center; padding: 0.4rem; }
 
             .alias-grid-container { grid-template-columns: 1fr; max-height: none; overflow: visible; }
         }
@@ -590,6 +608,7 @@
             .hero-desc { font-size: 0.875rem; }
             .input-box input { font-size: 0.875rem; padding-left: 2.5rem; }
             .btn-action { font-size: 0.875rem; padding: 0.85rem; }
+            .otp-digit-box { width: 32px; height: 40px; font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -971,20 +990,32 @@
     <div class="modal-mask" id="mailDetailModal" onclick="if(event.target===this) closeModal('mailDetailModal')">
         <div class="mail-detail-box">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-border); padding-bottom:0.75rem;">
-                <div style="display:flex; align-items:center; gap:0.6rem; overflow:hidden;">
+                <div style="display:flex; align-items:center; gap:0.6rem; overflow:hidden; flex:1;">
                     <i class="fa-solid fa-at" style="color:var(--purple); font-size:1.2rem;"></i>
                     <h4 id="detailTargetEmail" style="font-size:1rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h4>
+                    <button class="copy-btn-chip" onclick="copyText(window.currentDetailEmail, this)" title="Copy Email">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
                 </div>
-                <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.25rem;" onclick="closeModal('mailDetailModal')"></i>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.25rem; margin-left:0.5rem;" onclick="closeModal('mailDetailModal')"></i>
             </div>
 
-            <!-- UPPER DISPLAY: INCOMING / LATEST OTP FOR THIS MAIL -->
-            <div style="background:rgba(0,0,0,0.4); border:1px solid var(--panel-border); border-radius:20px; padding:1.25rem; text-align:center;">
-                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.4rem;">
+            <!-- UPPER DISPLAY: INCOMING / LATEST OTP FOR THIS MAIL WITH DYNAMIC DIGIT BOXES & COPY BUTTON -->
+            <div style="background:rgba(0,0,0,0.4); border:1px solid var(--panel-border); border-radius:20px; padding:1.25rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">
                     <i class="fa-solid fa-bolt" style="color:var(--emerald);"></i> Latest Live OTP
                 </div>
-                <div id="detailOtpBadge" class="otp-code-badge" style="display:inline-block; font-size:2.2rem; margin:0.4rem 0;">------</div>
-                <div id="detailOtpMeta" style="font-size:0.75rem; color:var(--text-muted);">No OTP received for this email yet</div>
+                
+                <!-- DYNAMIC DIGITS BOX WRAPPER -->
+                <div id="detailOtpBoxesContainer"></div>
+
+                <div style="display:flex; gap:0.6rem; align-items:center; justify-content:center; margin-top:0.2rem;">
+                    <button id="btnCopyDetailOtp" class="copy-btn-chip" style="padding:0.45rem 1.1rem; font-size:0.825rem;" onclick="copyCurrentDetailOtp(this)">
+                        <i class="fa-regular fa-copy"></i> Copy OTP Code
+                    </button>
+                </div>
+
+                <div id="detailOtpMeta" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">No OTP received for this email yet</div>
             </div>
 
             <!-- LOWER DISPLAY: SAVED VAULT ACCOUNTS FOR THIS MAIL -->
@@ -1106,8 +1137,9 @@
         let selectedVaultEmail = "";
         let aliasPool = [];
         window.currentDetailEmail = "";
+        let currentActiveOtpCode = "";
 
-        // Client-side pure JS Dot Alias Generator (Offline & Instant)
+        // Client-side pure JS Dot Alias Generator
         function generateDotAliasesJS(email, count = 500) {
             if (!email || !email.includes('@')) return [];
             const parts = email.split('@');
@@ -1132,6 +1164,23 @@
                 aliases.push(`${alias}@${domain}`);
             }
             return aliases;
+        }
+
+        // DYNAMIC DIGIT BOXES RENDERER FOR OTP CODES (4, 6, 8 DIGITS)
+        function renderOtpDigitBoxes(otpCode) {
+            if (!otpCode || otpCode === "------") {
+                return `<div class="otp-boxes-wrap">
+                    <span class="otp-digit-box empty">-</span>
+                    <span class="otp-digit-box empty">-</span>
+                    <span class="otp-digit-box empty">-</span>
+                    <span class="otp-digit-box empty">-</span>
+                    <span class="otp-digit-box empty">-</span>
+                    <span class="otp-digit-box empty">-</span>
+                </div>`;
+            }
+            const digits = otpCode.toString().split('');
+            const boxesHtml = digits.map(d => `<span class="otp-digit-box">${d}</span>`).join('');
+            return `<div class="otp-boxes-wrap">${boxesHtml}</div>`;
         }
 
         // SPLASH SCREEN DISMISSAL
@@ -1278,7 +1327,7 @@
 
         window.logout = () => signOut(auth);
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 
@@ -1293,7 +1342,7 @@
                 
                 closeModal('authModalMask');
                 switchView('dashboard-view');
-                loadSavedCloudSetup();
+                await loadSavedCloudSetup();
             } else {
                 currentUserUid = null;
                 switchView('landing-view');
@@ -1329,13 +1378,36 @@
             } catch(e) { console.error("Cloud storage sync error:", e); return null; }
         }
 
+        // LOAD EVERYTHING FROM CLOUDFLARE D1 (PERSISTENT CROSS-DEVICE DATA RESTORE)
         async function loadSavedCloudSetup() {
+            // 1. Fetch credentials
             const setup = await sendToWorker("get_setup");
             if (setup && setup.email && setup.appPassword) {
                 document.getElementById('inputEmail').value = setup.email;
                 document.getElementById('inputAppPass').value = setup.appPassword;
-                showToast("Encrypted Cloud settings synced!");
             }
+
+            // 2. Fetch created emails cross-device
+            const savedEmailsRes = await sendToWorker("get_emails");
+            if (savedEmailsRes && savedEmailsRes.emails && savedEmailsRes.emails.length > 0) {
+                generatedAliases = savedEmailsRes.emails;
+                renderAliasGrid();
+            } else {
+                // LocalStorage Fallback
+                const localSaved = localStorage.getItem(`generatedEmails_${currentUserUid}`);
+                if (localSaved) {
+                    generatedAliases = JSON.parse(localSaved);
+                    renderAliasGrid();
+                }
+            }
+
+            // 3. Fetch Vault Data
+            const vaultRes = await sendToWorker("get_vault");
+            if (vaultRes && vaultRes.vault) {
+                userVaultItems = vaultRes.vault;
+            }
+
+            showToast("Encrypted Cloud settings & emails synced!");
         }
 
         // Connection & Verification
@@ -1368,9 +1440,8 @@
                         showToast(data.message || "Connection Failed: Invalid App Password", true);
                     }
                 } catch(err) {
-                    // Smart fallback if opening directly via HTML file or offline
                     updateConnectionUI(true, "Active Mode");
-                    showToast("Connected in Active Mode!");
+                    showToast("Connected in Active Standby Mode!");
                     sendToWorker("save_setup", { email, appPassword: pass });
                 }
             } else {
@@ -1380,7 +1451,7 @@
             }
         };
 
-        // ON-DEMAND EMAIL GENERATION (Client-side Pure JS - 100% Instant & Offline Capable)
+        // ON-DEMAND EMAIL GENERATION WITH D1 CLOUD SYNC
         window.createOnDemandEmails = () => {
             const email = document.getElementById('inputEmail').value.trim();
             if (!email || !email.includes('@')) return showToast("Enter valid Gmail address first!", true);
@@ -1405,7 +1476,12 @@
 
             renderAliasGrid();
 
-            // Auto activate connection UI when user creates emails
+            // SYNC TO CLOUDFLARE D1 WORKER & LOCALSTORAGE (Cross-device persistence)
+            sendToWorker("save_emails", { emails: generatedAliases });
+            if (currentUserUid) {
+                localStorage.setItem(`generatedEmails_${currentUserUid}`, JSON.stringify(generatedAliases));
+            }
+
             if (!isConnected) {
                 updateConnectionUI(true, "Active Mode");
             }
@@ -1413,13 +1489,17 @@
             if (window.innerWidth <= 768) {
                 switchMobileTab('mailes');
             }
-            showToast(`${addedCount} Email(s) Created Successfully!`);
+            showToast(`${addedCount} Email(s) Created & Synced to Cloud!`);
         };
 
         window.clearAllGeneratedEmails = () => {
             generatedAliases = [];
             aliasPool = [];
             renderAliasGrid();
+            sendToWorker("save_emails", { emails: [] });
+            if (currentUserUid) {
+                localStorage.removeItem(`generatedEmails_${currentUserUid}`);
+            }
             showToast("Email list cleared!");
         };
 
@@ -1445,7 +1525,6 @@
                 return;
             }
 
-            // Filter logic (by email address OR number index e.g. 10 or #10)
             const filteredList = generatedAliases.map((email, idx) => ({ email, index: idx + 1 }))
                 .filter(item => {
                     if (!searchVal) return true;
@@ -1476,39 +1555,42 @@
                         <span style="font-size:0.725rem; color:var(--accent); font-weight:800; background:rgba(99,102,241,0.15); padding:0.15rem 0.55rem; border-radius:99px;">
                             #${item.index} EMAIL
                         </span>
-                        <i class="fa-solid fa-chevron-right" style="font-size:0.75rem; color:var(--text-muted);"></i>
+                        <button class="copy-btn-chip" onclick="event.stopPropagation(); copyText('${item.email}', this)" title="Copy Email">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
                     </div>
-                    <div style="font-size:0.875rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:white;">
+                    <div style="font-size:0.875rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:white; margin:0.2rem 0;">
                         ${item.email}
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
-                        <span>Tap to view OTP & Vault</span>
-                        <button class="action-icon-btn" style="width:26px; height:26px;" title="Copy Email" onclick="event.stopPropagation(); copyText('${item.email}', this)">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
+                        <span>Tap for OTP & Vault</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size:0.75rem; color:var(--text-muted);"></i>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Open Individual Mail Detail Window
+        // Open Mail Detail Window with Dynamic OTP Box Formatting
         window.openMailDetail = (alias) => {
             currentDetailEmail = alias;
             document.getElementById('detailTargetEmail').innerText = alias;
 
             const matchingOtp = cachedOtps.find(o => o.receiver === alias || o.sender.includes(alias));
-            const badge = document.getElementById('detailOtpBadge');
+            const boxesContainer = document.getElementById('detailOtpBoxesContainer');
             const meta = document.getElementById('detailOtpMeta');
 
             if (matchingOtp) {
-                badge.innerText = matchingOtp.otp;
+                currentActiveOtpCode = matchingOtp.otp;
+                boxesContainer.innerHTML = renderOtpDigitBoxes(matchingOtp.otp);
                 meta.innerHTML = `<i class="fa-regular fa-clock"></i> Received: ${matchingOtp.time} from ${matchingOtp.sender}`;
             } else if (cachedOtps.length > 0) {
-                badge.innerText = cachedOtps[0].otp;
+                currentActiveOtpCode = cachedOtps[0].otp;
+                boxesContainer.innerHTML = renderOtpDigitBoxes(cachedOtps[0].otp);
                 meta.innerHTML = `<i class="fa-regular fa-clock"></i> Latest Stream OTP from ${cachedOtps[0].sender}`;
             } else {
-                badge.innerText = "------";
+                currentActiveOtpCode = "";
+                boxesContainer.innerHTML = renderOtpDigitBoxes("------");
                 meta.innerText = "No OTP received for this email yet";
             }
 
@@ -1523,8 +1605,8 @@
                                 <div style="font-weight:700; font-size:0.85rem;">${m.website}</div>
                                 <div style="font-size:0.725rem; color:var(--text-muted);">${m.url || 'No URL'}</div>
                             </div>
-                            <button class="action-icon-btn" style="width:30px; height:30px;" onclick="copyText('${m.password}', this)" title="Copy Password">
-                                <i class="fa-regular fa-copy"></i>
+                            <button class="copy-btn-chip" onclick="copyText('${m.password}', this)" title="Copy Password">
+                                <i class="fa-regular fa-copy"></i> Copy Pass
                             </button>
                         </div>
                     `;
@@ -1536,12 +1618,18 @@
             openModal('mailDetailModal');
         };
 
+        window.copyCurrentDetailOtp = (btn) => {
+            if (!currentActiveOtpCode) return showToast("No OTP code to copy!", true);
+            copyText(currentActiveOtpCode, btn);
+        };
+
         window.copyText = (text, btn) => {
+            if (!text) return;
             navigator.clipboard.writeText(text);
-            const icon = btn.querySelector('i');
-            icon.className = 'fa-solid fa-check';
-            icon.style.color = 'var(--emerald)';
-            setTimeout(() => { icon.className = 'fa-regular fa-copy'; icon.style.color = ''; }, 2000);
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check" style="color:var(--emerald);"></i> Copied!';
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+            showToast("Copied to Clipboard!");
         };
 
         // Vault
@@ -1600,9 +1688,10 @@
             if (cachedOtps.length > 0) {
                 container.innerHTML = '';
                 cachedOtps.forEach(item => {
+                    const boxes = renderOtpDigitBoxes(item.otp);
                     container.innerHTML += `
                         <div class="otp-card-item">
-                            <div>
+                            <div style="flex:1;">
                                 <div style="font-weight:700; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                                     <i class="fa-solid fa-paper-plane" style="color:var(--accent);"></i> ${item.sender}
                                 </div>
@@ -1610,7 +1699,12 @@
                                     <i class="fa-regular fa-clock"></i> ${item.time}
                                 </div>
                             </div>
-                            <div class="otp-code-badge">${item.otp}</div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem;">
+                                ${boxes}
+                                <button class="copy-btn-chip" onclick="copyText('${item.otp}', this)">
+                                    <i class="fa-regular fa-copy"></i> Copy Code
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
