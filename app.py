@@ -3,6 +3,8 @@ import imaplib
 import email
 import re
 import os
+import json
+import urllib.request
 from email.header import decode_header
 from datetime import datetime
 
@@ -177,6 +179,63 @@ def check_emails():
     except Exception as e:
         print(f"IMAP Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/tempmail/generate', methods=['GET', 'POST'])
+def tempmail_generate():
+    try:
+        url = "https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode())
+            if data and len(data) > 0:
+                return jsonify({"status": "success", "email": data[0]})
+    except Exception as e:
+        print(f"Tempmail gen error: {e}")
+        
+    rand_id = os.urandom(4).hex()
+    return jsonify({"status": "success", "email": f"user_{rand_id}@1secmail.com"})
+
+@app.route('/api/tempmail/check', methods=['POST'])
+def tempmail_check():
+    data = request.json or {}
+    email_addr = data.get('email', '')
+    if not email_addr or '@' not in email_addr:
+        return jsonify({"status": "error", "message": "Email required"}), 400
+        
+    login, domain = email_addr.split('@')
+    messages_out = []
+    
+    try:
+        url = f"https://www.1secmail.com/api/v1/?action=getMessages&login={login}&domain={domain}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            msgs = json.loads(resp.read().decode())
+            
+            for m in msgs[:10]:
+                msg_id = m.get('id')
+                detail_url = f"https://www.1secmail.com/api/v1/?action=readMessage&login={login}&domain={domain}&id={msg_id}"
+                detail_req = urllib.request.Request(detail_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                with urllib.request.urlopen(detail_req, timeout=8) as dresp:
+                    detail = json.loads(dresp.read().decode())
+                    subject = detail.get('subject', '')
+                    text_body = detail.get('textBody', '')
+                    html_body = detail.get('htmlBody', '')
+                    
+                    full_text = f"{subject} {text_body} {clean_html(html_body)}"
+                    otp = extract_otp(full_text)
+                    
+                    messages_out.append({
+                        'id': msg_id,
+                        'from': detail.get('from', m.get('from', 'Unknown')),
+                        'subject': subject or 'No Subject',
+                        'date': detail.get('date', m.get('date', '')),
+                        'otp': otp
+                    })
+                    
+        return jsonify({"status": "success", "messages": messages_out})
+    except Exception as e:
+        print(f"Tempmail check error: {e}")
+        return jsonify({"status": "success", "messages": []})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=False)

@@ -949,7 +949,47 @@
                 </div>
             </div>
 
-            <!-- COLUMN 3: REALTIME OTP STREAM & HISTORY -->
+            <!-- COLUMN 3: INSTANT TEMP MAIL PANEL -->
+            <div id="dashTabTempMail" class="dash-screen-panel">
+                <div class="panel-card">
+                    <div class="section-title">
+                        <span><i class="fa-solid fa-bolt-lightning" style="color:var(--amber);"></i> Instant Temp Mail</span>
+                        <button class="refresh-icon-btn" onclick="generateNewTempMail()" title="New Temp Email">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid var(--panel-border); border-radius:18px; padding:1.1rem; text-align:center; margin-bottom:0.85rem;">
+                        <div style="font-size:0.725rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.35rem;">Active Disposable Temp Email</div>
+                        <div id="tempEmailDisplay" style="font-size:1.05rem; font-weight:800; color:var(--cyan); word-break:break-all; margin-bottom:0.65rem;">Loading...</div>
+                        <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                            <button class="copy-btn-chip" onclick="copyText(window.currentTempEmail, this)">
+                                <i class="fa-regular fa-copy"></i> Copy Email
+                            </button>
+                            <button class="copy-btn-chip" style="background:rgba(245,158,11,0.2); border-color:rgba(245,158,11,0.4); color:var(--amber);" onclick="generateNewTempMail()">
+                                <i class="fa-solid fa-plus"></i> New Temp Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <span><i class="fa-solid fa-inbox" style="color:var(--emerald);"></i> Live Temp Inbox & OTPs</span>
+                        <button class="refresh-icon-btn" onclick="checkTempMailInbox(true)" title="Refresh Temp Inbox">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <div id="tempMailMessagesContainer" class="otp-cards-wrapper">
+                        <div style="margin:auto; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+                            <i class="fa-solid fa-inbox" style="font-size:2rem; margin-bottom:0.5rem; opacity:0.35;"></i>
+                            <h4>Temp Inbox Empty</h4>
+                            <p style="font-size:0.8rem; margin-top:0.25rem;">Waiting for incoming temp messages...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMN 4: REALTIME OTP STREAM & HISTORY -->
             <div id="dashTabHistory" class="dash-screen-panel">
                 <div class="panel-card">
                     <div class="section-title">
@@ -975,7 +1015,7 @@
         </div>
     </section>
 
-    <!-- MOBILE BOTTOM NAVIGATION (3 SCREENS) -->
+    <!-- MOBILE BOTTOM NAVIGATION (4 SCREENS) -->
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" onclick="switchMobileTab('setup')">
             <i class="fa-solid fa-sliders"></i>
@@ -984,6 +1024,10 @@
         <button class="mobile-nav-item" onclick="switchMobileTab('mailes')">
             <i class="fa-solid fa-at"></i>
             <span>All Emails</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchMobileTab('tempmail')">
+            <i class="fa-solid fa-bolt-lightning" style="color:var(--amber);"></i>
+            <span>Temp Mail</span>
         </button>
         <button class="mobile-nav-item" onclick="switchMobileTab('history')">
             <i class="fa-solid fa-clock-rotate-left"></i>
@@ -1005,23 +1049,8 @@
                 <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.25rem; margin-left:0.5rem;" onclick="closeModal('mailDetailModal')"></i>
             </div>
 
-            <!-- UPPER DISPLAY: INCOMING / LATEST OTP FOR THIS MAIL WITH DYNAMIC DIGIT BOXES & COPY BUTTON -->
-            <div style="background:rgba(0,0,0,0.4); border:1px solid var(--panel-border); border-radius:20px; padding:1.25rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">
-                    <i class="fa-solid fa-bolt" style="color:var(--emerald);"></i> Latest Live OTP
-                </div>
-                
-                <!-- DYNAMIC DIGITS BOX WRAPPER -->
-                <div id="detailOtpBoxesContainer"></div>
-
-                <div style="display:flex; gap:0.6rem; align-items:center; justify-content:center; margin-top:0.2rem;">
-                    <button id="btnCopyDetailOtp" class="copy-btn-chip" style="padding:0.45rem 1.1rem; font-size:0.825rem;" onclick="copyCurrentDetailOtp(this)">
-                        <i class="fa-regular fa-copy"></i> Copy OTP Code
-                    </button>
-                </div>
-
-                <div id="detailOtpMeta" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">No OTP received for this email yet</div>
-            </div>
+            <!-- DYNAMIC HEADER NOTICE / TEMP MAIL LIVE INBOX CARD -->
+            <div id="detailEmailHeaderCard"></div>
 
             <!-- LOWER DISPLAY: SAVED VAULT ACCOUNTS FOR THIS MAIL -->
             <div>
@@ -1540,9 +1569,12 @@
             const searchVal = document.getElementById('emailSearchInput')?.value.trim().toLowerCase() || '';
             const totalCounter = document.getElementById('emailTotalCount');
 
-            if (totalCounter) totalCounter.innerText = generatedAliases.length;
+            // Strictly filter Gmail Setup Dot Aliases
+            const cleanAliases = generatedAliases.filter(e => typeof e === 'string' && !e.toLowerCase().includes('1secmail'));
 
-            if (generatedAliases.length === 0) {
+            if (totalCounter) totalCounter.innerText = cleanAliases.length;
+
+            if (cleanAliases.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
                         <i class="fa-solid fa-envelope-open-text" style="font-size:2.4rem; margin-bottom:0.75rem; opacity:0.35;"></i>
@@ -1553,7 +1585,7 @@
                 return;
             }
 
-            const filteredList = generatedAliases.map((email, idx) => ({ email, index: idx + 1 }))
+            const filteredList = cleanAliases.map((email, idx) => ({ email, index: idx + 1 }))
                 .filter(item => {
                     if (!searchVal) return true;
                     const cleanSearch = searchVal.replace('#', '');
@@ -1578,10 +1610,11 @@
                 const card = document.createElement('div');
                 card.className = 'alias-card-item';
                 card.onclick = () => openMailDetail(item.email);
+                
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-size:0.725rem; color:var(--accent); font-weight:800; background:rgba(99,102,241,0.15); padding:0.15rem 0.55rem; border-radius:99px;">
-                            #${item.index} EMAIL
+                            #${item.index} GMAIL ALIAS
                         </span>
                         <button class="copy-btn-chip" onclick="event.stopPropagation(); copyText('${item.email}', this)" title="Copy Email">
                             <i class="fa-regular fa-copy"></i> Copy
@@ -1591,7 +1624,7 @@
                         ${item.email}
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
-                        <span>Tap for OTP & Vault</span>
+                        <span>Tap for Vault & Details</span>
                         <i class="fa-solid fa-chevron-right" style="font-size:0.75rem; color:var(--text-muted);"></i>
                     </div>
                 `;
@@ -1599,41 +1632,50 @@
             });
         }
 
-        // Open Mail Detail Window with Dynamic OTP Box Formatting
-        window.openMailDetail = (alias) => {
+        // Open Mail Detail Window with Dynamic OTP Box Formatting & Temp Mail Support
+        window.openMailDetail = async (alias) => {
             currentDetailEmail = alias;
             document.getElementById('detailTargetEmail').innerText = alias;
 
-            const matchingOtp = cachedOtps.find(o => 
-                (o.receiver && o.receiver.toLowerCase().includes(alias.toLowerCase())) || 
-                (o.sender && o.sender.toLowerCase().includes(alias.toLowerCase()))
-            );
-            const boxesContainer = document.getElementById('detailOtpBoxesContainer');
-            const meta = document.getElementById('detailOtpMeta');
+            const headerCard = document.getElementById('detailEmailHeaderCard');
+            const isTemp = alias.toLowerCase().includes('1secmail');
 
-            if (matchingOtp) {
-                currentActiveOtpCode = matchingOtp.otp;
-                boxesContainer.innerHTML = renderOtpDigitBoxes(matchingOtp.otp);
-                meta.innerHTML = `<i class="fa-regular fa-clock"></i> Received: ${matchingOtp.time} from ${matchingOtp.sender}`;
-            } else if (cachedOtps.length > 0) {
-                currentActiveOtpCode = cachedOtps[0].otp;
-                boxesContainer.innerHTML = renderOtpDigitBoxes(cachedOtps[0].otp);
-                meta.innerHTML = `<i class="fa-regular fa-clock"></i> Latest Stream OTP from ${cachedOtps[0].sender}`;
+            if (isTemp) {
+                headerCard.innerHTML = `
+                    <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:20px; padding:1.2rem; text-align:center;">
+                        <div style="font-size:0.75rem; font-weight:800; color:var(--amber); text-transform:uppercase; margin-bottom:0.4rem;">
+                            <i class="fa-solid fa-bolt-lightning"></i> Live Disposable Temp Mail Inbox
+                        </div>
+                        <div id="detailTempInboxContainer" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+                            <div style="font-size:0.8rem; color:var(--text-muted);">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Checking live inbox...
+                            </div>
+                        </div>
+                    </div>
+                `;
+                checkTempMailForModal(alias);
             } else {
-                currentActiveOtpCode = "";
-                boxesContainer.innerHTML = renderOtpDigitBoxes("------");
-                meta.innerText = "No OTP received for this email yet";
+                headerCard.innerHTML = `
+                    <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); border-radius:20px; padding:1.2rem; text-align:center;">
+                        <i class="fa-solid fa-envelope-circle-check" style="font-size:2rem; color:var(--accent); margin-bottom:0.4rem;"></i>
+                        <h4 style="color:white; font-size:0.95rem; font-weight:800; margin-bottom:0.25rem;">Primary Gmail Dot Alias</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.45;">
+                            আপনার ওটিপি সরাসরি আপনার মেইন জিমেইল ইনবক্সে এবং <b>Realtime OTP History</b> স্ট্রিমে চলে যাবে। সেখান থেকেই ওটিপি কোড ব্যবহার করবেন।
+                        </p>
+                    </div>
+                `;
             }
 
+            // Render Saved Vault Credentials for this Email
             const vaultContainer = document.getElementById('detailVaultList');
-            const matches = userVaultItems.filter(v => v.email === alias);
+            const matches = userVaultItems.filter(v => v.email && v.email.toLowerCase() === alias.toLowerCase());
             if (matches.length > 0) {
                 vaultContainer.innerHTML = '';
                 matches.forEach(m => {
                     vaultContainer.innerHTML += `
-                        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--panel-border); padding:0.75rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--panel-border); padding:0.75rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <div style="font-weight:700; font-size:0.85rem;">${m.website}</div>
+                                <div style="font-weight:800; font-size:0.85rem; color:white;">${m.website}</div>
                                 <div style="font-size:0.725rem; color:var(--text-muted);">${m.url || 'No URL'}</div>
                             </div>
                             <button class="copy-btn-chip" onclick="copyText('${m.password}', this)" title="Copy Password">
@@ -1643,11 +1685,51 @@
                     `;
                 });
             } else {
-                vaultContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:1rem;">No saved credentials for this email.</div>`;
+                vaultContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:1rem;">No saved credentials for this email yet. Tap '+' to save.</div>`;
             }
 
             openModal('mailDetailModal');
         };
+
+        async function checkTempMailForModal(email) {
+            if (!email || !email.includes('@')) return;
+            const [login, domain] = email.split('@');
+            const container = document.getElementById('detailTempInboxContainer');
+            if (!container) return;
+
+            try {
+                const res = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${login}&domain=${domain}`);
+                const msgs = await res.json();
+
+                if (msgs && msgs.length > 0) {
+                    container.innerHTML = '';
+                    for (const m of msgs.slice(0, 5)) {
+                        const detailRes = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${login}&domain=${domain}&id=${m.id}`);
+                        const detail = await detailRes.json();
+                        const fullText = (detail.subject || '') + ' ' + (detail.textBody || '') + ' ' + (detail.htmlBody || '');
+                        const otpCode = extractOtpFromText(fullText);
+                        const boxes = otpCode ? renderOtpDigitBoxes(otpCode) : '';
+
+                        container.innerHTML += `
+                            <div style="background:rgba(0,0,0,0.45); border:1px solid var(--panel-border); border-radius:14px; padding:0.75rem; text-align:left;">
+                                <div style="font-weight:700; font-size:0.785rem; color:var(--amber);"><i class="fa-solid fa-paper-plane"></i> ${detail.from || m.from}</div>
+                                <div style="font-size:0.825rem; font-weight:800; color:white; margin:0.2rem 0;">${detail.subject || m.subject || 'No Subject'}</div>
+                                ${otpCode ? `
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.4rem; gap:0.5rem; flex-wrap:wrap;">
+                                    ${boxes}
+                                    <button class="copy-btn-chip" onclick="copyText('${otpCode}', this)"><i class="fa-regular fa-copy"></i> Copy OTP</button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                } else {
+                    container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); padding:0.5rem;">No messages received for this temp mail yet.</div>`;
+                }
+            } catch(e) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); padding:0.5rem;">Ready to receive messages.</div>`;
+            }
+        }
 
         window.copyCurrentDetailOtp = (btn) => {
             if (!currentActiveOtpCode) return showToast("No OTP code to copy!", true);
@@ -1780,6 +1862,183 @@
                 `;
             }
         }
+
+        // Mobile Bottom Tab Switcher (4 Screens)
+        window.switchMobileTab = (tab) => {
+            const tabs = ['setup', 'mailes', 'tempmail', 'history'];
+            document.querySelectorAll('.mobile-nav-item').forEach((btn, idx) => {
+                if (tabs[idx] === tab) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const panelMap = {
+                'setup': 'dashTabSetup',
+                'mailes': 'dashTabMailes',
+                'tempmail': 'dashTabTempMail',
+                'history': 'dashTabHistory'
+            };
+
+            document.querySelectorAll('.dash-screen-panel').forEach(panel => panel.classList.remove('mobile-active'));
+            const targetPanel = document.getElementById(panelMap[tab]);
+            if (targetPanel) targetPanel.classList.add('mobile-active');
+
+            if (tab === 'tempmail') {
+                checkTempMailInbox();
+            }
+        };
+
+        // INSTANT TEMP MAIL ENGINE (1SECMAIL INTEGRATION)
+        window.currentTempEmail = localStorage.getItem('currentTempEmail') || '';
+
+        window.generateNewTempMail = async () => {
+            const displayEl = document.getElementById('tempEmailDisplay');
+            if (displayEl) displayEl.innerText = "Generating...";
+
+            let newMail = "";
+            try {
+                // Try Flask Backend Proxy first
+                const res = await fetch('/api/tempmail/generate');
+                const data = await res.json();
+                if (data && data.status === 'success' && data.email) {
+                    newMail = data.email;
+                }
+            } catch(e) {
+                // Direct Client Fallback
+                try {
+                    const directRes = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1');
+                    const directData = await directRes.json();
+                    if (directData && directData.length > 0) newMail = directData[0];
+                } catch(errDirect) {}
+            }
+
+            if (!newMail) {
+                const randStr = Math.random().toString(36).substring(2, 9);
+                newMail = `user_${randStr}@1secmail.com`;
+            }
+
+            window.currentTempEmail = newMail;
+            localStorage.setItem('currentTempEmail', window.currentTempEmail);
+            if (displayEl) displayEl.innerText = window.currentTempEmail;
+
+            showToast("New Instant Temp Email Generated!");
+            checkTempMailInbox(true);
+        };
+
+        window.checkTempMailInbox = async (manual = false) => {
+            if (!window.currentTempEmail || !window.currentTempEmail.includes('@')) {
+                await generateNewTempMail();
+                return;
+            }
+
+            const displayEl = document.getElementById('tempEmailDisplay');
+            if (displayEl && displayEl.innerText !== window.currentTempEmail) {
+                displayEl.innerText = window.currentTempEmail;
+            }
+
+            const container = document.getElementById('tempMailMessagesContainer');
+            let msgs = [];
+
+            try {
+                // 1. Try Flask Backend Proxy Route first
+                const res = await fetch('/api/tempmail/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: window.currentTempEmail })
+                });
+                const data = await res.json();
+                if (data && data.status === 'success' && data.messages) {
+                    msgs = data.messages;
+                }
+            } catch(e) {
+                // 2. Direct Client Fallback
+                try {
+                    const [login, domain] = window.currentTempEmail.split('@');
+                    const directRes = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${login}&domain=${domain}`);
+                    const directMsgs = await directRes.json();
+                    if (directMsgs && directMsgs.length > 0) {
+                        for (const m of directMsgs.slice(0, 10)) {
+                            const detailRes = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${login}&domain=${domain}&id=${m.id}`);
+                            const detail = await detailRes.json();
+                            const fullText = (detail.subject || '') + ' ' + (detail.textBody || '') + ' ' + (detail.htmlBody || '');
+                            msgs.push({
+                                id: m.id,
+                                from: detail.from || m.from,
+                                subject: detail.subject || m.subject || 'No Subject',
+                                date: detail.date || m.date,
+                                otp: extractOtpFromText(fullText)
+                            });
+                        }
+                    }
+                } catch(errDirect) {}
+            }
+
+            if (msgs && msgs.length > 0) {
+                container.innerHTML = '';
+                msgs.forEach(m => {
+                    const otpCode = m.otp;
+                    const boxes = otpCode ? renderOtpDigitBoxes(otpCode) : '';
+
+                    container.innerHTML += `
+                        <div class="otp-card-item" style="border:1px solid rgba(245, 158, 11, 0.35); background:rgba(245, 158, 11, 0.05);">
+                            <div style="flex:1;">
+                                <div style="font-weight:800; color:var(--amber); display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                    <i class="fa-solid fa-paper-plane"></i> ${m.from}
+                                </div>
+                                <div style="font-size:0.85rem; font-weight:700; color:white; margin-bottom:0.35rem;">
+                                    ${m.subject}
+                                </div>
+                                <div style="font-size:0.775rem; color:var(--text-muted);">
+                                    <i class="fa-regular fa-clock"></i> ${m.date}
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem;">
+                                ${boxes}
+                                ${otpCode ? `
+                                <button class="copy-btn-chip" onclick="copyText('${otpCode}', this)">
+                                    <i class="fa-regular fa-copy"></i> Copy OTP
+                                </button>
+                                ` : `
+                                <button class="copy-btn-chip" onclick="copyText('${m.id}', this); showToast('Mail ID copied');">
+                                    Mail Received
+                                </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `
+                    <div style="margin:auto; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+                        <i class="fa-solid fa-inbox" style="font-size:2.2rem; margin-bottom:0.5rem; opacity:0.35;"></i>
+                        <h4>Temp Inbox Empty</h4>
+                        <p style="font-size:0.8rem; margin-top:0.25rem;">Send email to <b>${window.currentTempEmail}</b> to see incoming OTPs live.</p>
+                    </div>
+                `;
+            }
+
+            if (manual) showToast("Temp inbox refreshed!");
+        };
+
+        function extractOtpFromText(text) {
+            if (!text) return null;
+            const match = text.match(/(?:code|otp|pin|is|verification|passcode|security)\s*[:\s-]*\b(\d{4,8})\b/i);
+            if (match && !['2024','2025','2026','2027','5000'].includes(match[1])) return match[1];
+            const numMatch = text.match(/\b\d{4,8}\b/g);
+            if (numMatch) {
+                const filtered = numMatch.filter(n => !['2024','2025','2026','2027','5000'].includes(n));
+                if (filtered.length > 0) return filtered[0];
+            }
+            return null;
+        }
+
+        // Initialize Temp Mail on Load
+        if (!window.currentTempEmail) {
+            generateNewTempMail();
+        } else {
+            const displayEl = document.getElementById('tempEmailDisplay');
+            if (displayEl) displayEl.innerText = window.currentTempEmail;
+        }
+        setInterval(checkTempMailInbox, 4000);
     </script>
 </body>
 </html>
