@@ -1,11 +1,12 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import imaplib
 import email
 import re
+import os
 from email.header import decode_header
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 def generate_dot_emails(email_address):
     if '@' not in email_address:
@@ -32,7 +33,6 @@ def decode_mime_words(s):
         for word, encoding in decode_header(s))
 
 def extract_otp(text):
-    # Matches exactly 6 digit codes
     match = re.search(r'\b\d{6}\b', text)
     if match:
         return match.group(0)
@@ -41,6 +41,14 @@ def extract_otp(text):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/logo.png')
+def serve_logo_root():
+    return send_from_directory('static', 'logo.png')
+
+@app.route('/static/<path:filename>')
+def serve_static_files(filename):
+    return send_from_directory('static', filename)
 
 @app.route('/api/generate', methods=['POST'])
 def api_generate():
@@ -84,7 +92,6 @@ def check_emails():
         mail.login(monitor_email, monitor_password)
         mail.select("inbox")
         
-        # Search for unseen emails
         status, messages = mail.search(None, 'UNSEEN')
         
         if status == "OK" and messages[0]:

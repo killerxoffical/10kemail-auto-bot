@@ -3,366 +3,750 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>10k Maile - OTP & Vault Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>10k Maile | VAREON STUDIO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #09090b;
-            --panel-bg: rgba(24, 24, 27, 0.75);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg: #030712;
+            --panel-bg: rgba(15, 23, 42, 0.82);
+            --panel-border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.55);
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --purple: #a855f7;
+            --cyan: #06b6d4;
+            --amber: #f59e0b;
+            --discord: #5865F2;
+            --telegram: #24A1DE;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            word-wrap: break-word; overflow-wrap: break-word;
+        }
 
         body {
-            font-family: 'Inter', sans-serif; background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-                              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
-            background-attachment: fixed; color: var(--text-main);
-            height: 100vh; overflow: hidden;
-            display: flex; justify-content: center; align-items: center; padding: 1rem;
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .no-select, img {
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            -khtml-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-user-drag: none !important;
+        }
+
+        /* 3D Animated Background Glows */
+        .bg-glow-1 {
+            position: fixed; top: -15%; left: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(6, 182, 212, 0.18) 50%, transparent 70%);
+            filter: blur(90px); z-index: -1; animation: floatGlow 10s infinite alternate ease-in-out;
+        }
+        .bg-glow-2 {
+            position: fixed; bottom: -15%; right: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(244, 63, 94, 0.15) 50%, transparent 70%);
+            filter: blur(90px); z-index: -1; animation: floatGlow 14s infinite alternate-reverse ease-in-out;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, 40px) scale(1.12); }
+        }
+
+        /* Custom Logo Styling */
+        .brand-logo-container {
+            display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.35rem;
+        }
+
+        .brand-logo-img {
+            height: 48px; width: auto; max-width: 160px; object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.7));
+            pointer-events: none; transition: transform 0.3s ease;
+        }
+        
+        .logo-fallback-3d {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--purple), var(--cyan));
+            display: flex; justify-content: center; align-items: center; color: white;
+            box-shadow: 0 0 20px var(--accent-glow); display: none;
         }
 
         /* Views */
-        #login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
-        #dashboard-view { display: none; width: 100%; max-width: 1200px; height: 100%; max-height: 900px; }
+        .view-section { display: none; width: 100%; min-height: 100vh; }
+        .view-section.active { display: flex; flex-direction: column; }
 
-        /* Login Screen */
-        .login-card {
-            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--panel-border); border-radius: 24px; padding: 3rem; text-align: center;
-            max-width: 400px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        .brand-tag {
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+            background: linear-gradient(90deg, #6366f1, #a855f7, #06b6d4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none;
         }
-        .login-card i { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
-        .login-card h2 { justify-content: center; margin-bottom: 1rem; }
+        .brand-tag:hover { opacity: 0.9; text-decoration: underline; }
 
-        .btn-google {
-            background: white; color: #333; padding: 0.85rem 1.5rem; border-radius: 99px;
-            border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            gap: 0.5rem; width: 100%; font-size: 1rem; margin-top: 2rem; transition: all 0.2s;
+        /* LANDING PAGE STYLES */
+        #landing-view {
+            justify-content: space-between; align-items: center; padding: 2rem;
+            position: relative; overflow-x: hidden;
         }
-        .btn-google:hover { box-shadow: 0 4px 14px rgba(255,255,255,0.2); transform: translateY(-2px); }
-        .btn-google img { width: 20px; }
 
-        /* Main Dashboard */
-        .container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; height: 100%; }
+        .landing-nav {
+            width: 100%; max-width: 1250px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .nav-right-wrap { display: flex; align-items: center; gap: 0.85rem; }
+        .nav-social-links { display: flex; align-items: center; gap: 0.6rem; }
+
+        .nav-getstarted-btn {
+            padding: 0.65rem 1.4rem; border-radius: 99px; border: none; font-size: 0.875rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple)); color: white; cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow); transition: all 0.25s ease;
+            display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
+        }
+        .nav-getstarted-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+
+        .social-btn {
+            padding: 0.5rem 1.1rem; border-radius: 99px; font-size: 0.825rem; font-weight: 700;
+            text-decoration: none; color: white; display: flex; align-items: center; gap: 0.45rem;
+            transition: all 0.25s ease; border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+        }
+        .social-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .social-btn.discord { background: rgba(88, 101, 242, 0.25); border-color: rgba(88, 101, 242, 0.5); }
+        .social-btn.discord:hover { background: var(--discord); }
+        .social-btn.telegram { background: rgba(36, 161, 222, 0.25); border-color: rgba(36, 161, 222, 0.5); }
+        .social-btn.telegram:hover { background: var(--telegram); }
+        .social-btn.dev-web { background: rgba(168, 85, 247, 0.25); border-color: rgba(168, 85, 247, 0.5); }
+        .social-btn.dev-web:hover { background: var(--purple); }
+
+        .hero-container {
+            max-width: 1150px; text-align: center; margin: auto; display: flex; flex-direction: column; align-items: center; gap: 1.75rem;
+            width: 100%;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.35);
+            padding: 0.55rem 1.5rem; border-radius: 99px; font-size: 0.875rem; font-weight: 700; color: #a5b4fc;
+            box-shadow: 0 0 25px rgba(99,102,241,0.25); animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(99,102,241,0.2); }
+            50% { box-shadow: 0 0 35px rgba(99,102,241,0.6); }
+        }
+
+        .hero-title {
+            font-size: 3.8rem; font-weight: 800; line-height: 1.15;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            width: 100%;
+        }
+
+        .hero-desc { font-size: 1.15rem; color: var(--text-muted); max-width: 720px; line-height: 1.65; }
+
+        .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+
+        .cta-btn {
+            padding: 1.15rem 2.8rem; border-radius: 99px; border: none; font-size: 1.1rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple)); color: white; cursor: pointer;
+            box-shadow: 0 12px 35px var(--accent-glow); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 0.85rem; position: relative; overflow: hidden;
+            text-decoration: none;
+        }
+        .cta-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 18px 45px var(--accent-glow); }
+
+        .cta-btn.discord-hero {
+            background: linear-gradient(135deg, #5865F2, #4752C4);
+            box-shadow: 0 12px 35px rgba(88, 101, 242, 0.4);
+        }
+        .cta-btn.telegram-hero {
+            background: linear-gradient(135deg, #24A1DE, #1C82B6);
+            box-shadow: 0 12px 35px rgba(36, 161, 222, 0.4);
+        }
+
+        /* FIXED 3D HERO VISUAL CONTAINMENT */
+        .hero-3d-visual {
+            position: relative; width: 100%; max-width: 520px; height: 200px; margin: 1rem 0;
+            perspective: 1000px; display: flex; justify-content: center; align-items: center;
+        }
+
+        .mail-3d-card {
+            position: relative; width: 100%; height: 100%; border-radius: 24px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(99, 102, 241, 0.4); backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 35px var(--accent-glow);
+            padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;
+            animation: float3DCard 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes float3DCard {
+            0% { transform: rotateY(-8deg) rotateX(6deg) translateY(-6px); }
+            100% { transform: rotateY(8deg) rotateX(-6deg) translateY(10px); }
+        }
+
+        .otp-3d-badge {
+            position: absolute; right: 1.25rem; bottom: 1.25rem;
+            background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.6);
+            backdrop-filter: blur(12px); border-radius: 14px; padding: 0.6rem 1.25rem;
+            color: var(--emerald); font-weight: 800; font-size: 1.6rem; letter-spacing: 5px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
+            animation: float3DOtp 4s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes float3DOtp {
+            0% { transform: scale(0.96) translateY(0px); }
+            100% { transform: scale(1.04) translateY(-6px); }
+        }
+
+        /* Use Cases Grid */
+        .usecase-section {
+            width: 100%; margin-top: 2.5rem; text-align: center;
+        }
+        .usecase-title {
+            font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .usecase-sub { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+        .demo-3d-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+            width: 100%; max-width: 1150px; margin: 0 auto; perspective: 1200px;
+        }
+        .card-3d {
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 24px;
+            padding: 1.6rem; backdrop-filter: blur(16px); text-align: left;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+        }
+        .card-3d:hover {
+            transform: translateY(-8deg) scale(1.02);
+            border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 30px 60px rgba(99,102,241,0.25);
+        }
+
+        .landing-footer {
+            width: 100%; text-align: center; padding: 2rem 1rem 1rem 1rem; color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;
+            display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+        }
+
+        /* DASHBOARD STYLES */
+        #dashboard-view { padding: 1.5rem; justify-content: flex-start; height: 100vh; overflow: hidden; }
+
+        .dash-nav {
+            width: 100%; max-width: 1350px; margin: 0 auto 1.5rem auto; display: flex;
+            justify-content: space-between; align-items: center;
+            background: var(--panel-bg); border: 1px solid var(--panel-border);
+            padding: 0.85rem 1.5rem; border-radius: 22px; backdrop-filter: blur(20px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .user-profile-badge {
+            display: flex; align-items: center; gap: 0.85rem; background: rgba(255,255,255,0.05);
+            padding: 0.4rem 1rem 0.4rem 0.5rem; border-radius: 99px; border: 1px solid var(--panel-border);
+            cursor: pointer; transition: all 0.25s; max-width: 100%;
+        }
+        .user-profile-badge:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+        .user-profile-badge img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); flex-shrink: 0; }
+
+        .main-grid {
+            width: 100%; max-width: 1350px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.4fr;
+            gap: 1.5rem; flex: 1; height: calc(100vh - 125px); overflow: hidden;
+        }
+
+        .panel-card {
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 26px;
+            padding: 2rem; backdrop-filter: blur(20px); display: flex; flex-direction: column; overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .section-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem; }
+        .section-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+
+        /* Input Controls */
+        .form-group { margin-bottom: 1.25rem; }
+        .label-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem; }
+        label { font-size: 0.85rem; font-weight: 700; color: #e2e8f0; }
         
-        @media (max-width: 900px) {
-            body { padding: 0; }
-            .container { grid-template-columns: 1fr; height: 100vh; max-height: none; gap: 0; overflow-y: auto; }
-            .panel { border-radius: 0 !important; border: none !important; border-bottom: 1px solid var(--panel-border) !important; min-height: auto; }
+        .input-box { position: relative; display: flex; align-items: center; width: 100%; }
+        .input-box i { position: absolute; left: 1.1rem; color: var(--text-muted); font-size: 1rem; }
+        .input-box input {
+            width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; border-radius: 14px;
+            background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; font-size: 0.95rem; transition: all 0.3s;
+        }
+        .input-box input:focus {
+            outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: rgba(0, 0, 0, 0.65);
         }
 
-        .panel {
-            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--panel-border); border-radius: 24px; padding: 2rem;
-            display: flex; flex-direction: column; overflow-y: auto; position: relative;
+        .btn-action {
+            width: 100%; padding: 0.95rem; border-radius: 14px; border: none; font-weight: 800; font-size: 0.95rem;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.6rem; transition: all 0.25s;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; box-shadow: 0 6px 20px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent-glow); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: white; border: 1px solid var(--panel-border); margin-top: 0.75rem; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .btn-danger { background: var(--rose); color: white; box-shadow: 0 6px 20px rgba(244, 63, 94, 0.35); }
+
+        /* Generated Alias List */
+        .alias-container {
+            margin-top: 1.25rem; background: rgba(0, 0, 0, 0.35); border-radius: 18px; border: 1px solid var(--panel-border);
+            max-height: 220px; overflow-y: auto; display: none; width: 100%;
+        }
+        .alias-item {
+            padding: 0.8rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex;
+            justify-content: space-between; align-items: center; font-size: 0.875rem; gap: 0.5rem;
+        }
+        .alias-item:last-child { border-bottom: none; }
+        .alias-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .action-icon-btn {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: white;
+            width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .action-icon-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .action-icon-btn.vault:hover { background: var(--purple); border-color: var(--purple); }
+
+        /* Inbox List */
+        .status-pill {
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700;
+            padding: 0.4rem 1rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border);
+            flex-shrink: 0;
+        }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+        .status-pill.active { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--emerald); }
+        .status-pill.active .pulse-dot { background: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: pulseAnim 1.5s infinite; }
+
+        @keyframes pulseAnim {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
         }
 
-        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; }
-
-        /* User Profile Badge */
-        .profile-badge {
-            position: absolute; top: 1.5rem; right: 1.5rem;
-            display: flex; align-items: center; gap: 0.5rem;
-            background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem;
-            border-radius: 99px; font-size: 0.8rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+        .otp-cards-wrapper { display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.25rem; }
+        .otp-card-item {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 20px;
+            padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s;
+            gap: 1rem;
         }
-        .profile-badge:hover { background: rgba(255,255,255,0.1); }
-        .profile-badge img { width: 24px; height: 24px; border-radius: 50%; }
-
-        /* Form Controls */
-        .form-group { margin-bottom: 1.5rem; }
-        .label-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        label { font-size: 0.85rem; font-weight: 500; color: #cbd5e1; }
-        .info-icon { color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
-        .info-icon:hover { color: var(--primary); }
-
-        .input-wrapper { position: relative; }
-        .input-wrapper i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        input {
-            width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border-radius: 12px;
-            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white; font-family: inherit; font-size: 1rem; transition: all 0.3s;
-        }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); background: rgba(0, 0, 0, 0.5); }
-
-        /* Buttons */
-        .btn-group { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-        button {
-            width: 100%; padding: 1rem; border-radius: 12px; border: none; font-family: inherit; font-weight: 600; font-size: 0.95rem;
-            cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-        }
-        button.primary { background: var(--primary); color: white; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39); }
-        button.primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        button.secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); }
-        button.secondary:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-        button.danger { background: var(--danger); color: white; box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39); }
-
-        /* Dashboard Header */
-        .dashboard-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);
-        }
-        .status-indicator {
-            display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500;
-            padding: 0.4rem 1rem; border-radius: 99px; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s;
-        }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
-        .status-indicator.active { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
-        .status-indicator.active .status-dot { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        .otp-card-item:hover { background: rgba(255,255,255,0.07); transform: translateX(4px); }
+        .otp-code-badge {
+            font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: 4px;
+            background: rgba(99, 102, 241, 0.12); padding: 0.4rem 1rem; border-radius: 14px; border: 1px dashed rgba(99, 102, 241, 0.35);
+            flex-shrink: 0; text-align: center;
         }
 
-        /* OTP Cards */
-        .otp-list { display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex: 1; padding-right: 0.5rem; }
-        .otp-card {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px; padding: 1.5rem; display: flex; justify-content: space-between;
-            align-items: center; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        /* MODALS */
+        .modal-mask {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center; z-index: 999;
+            opacity: 0; pointer-events: none; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 1rem;
         }
-        @media (max-width: 600px) { .otp-card { flex-direction: column; align-items: flex-start; gap: 1rem; } .otp-code { width: 100%; text-align: center; } }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .otp-meta { display: flex; flex-direction: column; gap: 0.4rem; }
-        .sender { font-size: 1.1rem; font-weight: 600; color: white; display: flex; align-items: center; gap: 0.5rem; }
-        .time { font-size: 0.85rem; color: var(--text-muted); }
-        .otp-code {
-            font-size: 2.2rem; font-weight: 700; color: var(--primary); letter-spacing: 4px;
-            background: rgba(59, 130, 246, 0.1); padding: 0.5rem 1rem;
-            border-radius: 12px; border: 1px dashed rgba(59, 130, 246, 0.3);
+        .modal-mask.active { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #0f172a; border: 1px solid var(--panel-border); border-radius: 28px;
+            padding: 2rem; width: 100%; max-width: 480px; transform: scale(0.92); transition: all 0.35s ease;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-mask.active .modal-box { transform: scale(1); }
+
+        /* TOAST */
+        .toast-msg {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--emerald); color: white; padding: 0.85rem 2rem; border-radius: 99px; font-weight: 700;
+            box-shadow: 0 10px 35px rgba(16, 185, 129, 0.45); z-index: 9999; transition: all 0.4s ease;
+            max-width: 90vw; text-align: center; font-size: 0.9rem;
+        }
+        .toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-msg.error { background: var(--rose); box-shadow: 0 10px 35px rgba(244, 63, 94, 0.45); }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 768px) {
+            #landing-view { padding: 1.25rem 1rem; }
+            .landing-nav { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; width: 100%; }
+            .brand-logo-container { font-size: 1.15rem; }
+            .brand-logo-img { height: 38px; }
+            
+            .nav-social-links { display: none !important; } /* Hide social links below header on mobile */
+            .nav-getstarted-btn { font-size: 0.8rem; padding: 0.5rem 1.1rem; }
+
+            .hero-container { gap: 1.25rem; }
+            .hero-badge { font-size: 0.75rem; padding: 0.4rem 1rem; }
+            .hero-title { font-size: 2.1rem; line-height: 1.25; }
+            .hero-desc { font-size: 0.95rem; line-height: 1.5; padding: 0 0.5rem; }
+            
+            .hero-actions { flex-direction: column; width: 100%; }
+            .cta-btn { font-size: 0.95rem; padding: 0.95rem 1.8rem; width: 100%; justify-content: center; }
+            
+            .hero-3d-visual { max-width: 100%; height: 160px; }
+            .otp-3d-badge { font-size: 1.25rem; padding: 0.4rem 0.9rem; letter-spacing: 3px; }
+
+            .demo-3d-cards { grid-template-columns: 1fr; gap: 1rem; }
+            .card-3d { width: 100%; max-width: 100%; transform: none !important; padding: 1.25rem; }
+            
+            #dashboard-view { padding: 1rem; height: auto; overflow: visible; }
+            .dash-nav { flex-direction: column; gap: 1rem; align-items: stretch; text-align: center; padding: 1rem; margin-bottom: 1rem; }
+            .dash-nav .brand-logo-container { justify-content: center; }
+            .user-profile-badge { justify-content: center; width: 100%; }
+            
+            .main-grid { grid-template-columns: 1fr; height: auto; overflow: visible; gap: 1rem; }
+            .panel-card { padding: 1.25rem; border-radius: 20px; box-shadow: none; }
+            
+            .section-title { font-size: 1.15rem; }
+            .section-sub { font-size: 0.8rem; margin-bottom: 1rem; }
+            
+            .otp-card-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .otp-code-badge { font-size: 1.75rem; width: 100%; text-align: center; }
+            
+            .modal-box { padding: 1.5rem 1.25rem; border-radius: 22px; }
         }
 
-        .empty-state {
-            text-align: center; padding: 4rem 2rem; color: var(--text-muted);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
+        @media (max-width: 480px) {
+            .hero-title { font-size: 1.75rem; }
+            .hero-desc { font-size: 0.875rem; }
+            .input-box input { font-size: 0.875rem; padding-left: 2.5rem; }
+            .btn-action { font-size: 0.875rem; padding: 0.85rem; }
         }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-
-        /* Generated Emails */
-        .generated-emails {
-            margin-top: 1.5rem; background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);
-            max-height: 250px; overflow-y: auto; display: none;
-        }
-        .email-item {
-            padding: 0.75rem 1rem; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
-        }
-        .email-text { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-        .action-btns { display: flex; gap: 0.5rem; }
-        .icon-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: white; width: 32px; height: 32px; border-radius: 8px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s;
-        }
-        .icon-btn:hover { background: var(--primary); border-color: var(--primary); }
-        .icon-btn.vault-btn:hover { background: #8b5cf6; border-color: #8b5cf6; } /* Purple for vault */
-
-        /* Modals */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content {
-            background: var(--bg-color); border: 1px solid var(--panel-border);
-            border-radius: 20px; padding: 2rem; max-width: 450px; width: 90%;
-            transform: translateY(20px); transition: transform 0.3s;
-        }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
-        .close-btn:hover { color: white; }
-
-        .step-item { display: flex; gap: 1rem; margin-bottom: 1rem; }
-        .step-num {
-            background: var(--primary); color: white; width: 28px; height: 28px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0;
-        }
-        .step-text { font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; }
-
-        /* Toast */
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--success); color: white; padding: 0.75rem 1.5rem; border-radius: 99px;
-            font-weight: 500; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-        .toast.error { background: var(--danger); box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5); }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <!-- 1. Login View -->
-    <div id="login-view">
-        <div class="login-card">
-            <i class="fa-solid fa-shield-halved"></i>
-            <h2>10k Maile Secure</h2>
-            <p class="subtitle" style="margin-bottom:0">Authenticate with Firebase to securely sync your vault data to Cloudflare.</p>
-            <button class="btn-google" id="googleLoginBtn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-                Sign in with Google
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- VIEW 1: 3D LANDING PAGE -->
+    <section id="landing-view" class="view-section active">
+        <nav class="landing-nav">
+            <div class="brand-logo-container no-select">
+                <img src="/logo.png" alt="10k Maile Logo" class="brand-logo-img" oncontextmenu="return false;" draggable="false" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback-3d"><i class="fa-solid fa-bolt"></i></div>
+                <span>10k Maile</span>
+            </div>
+            
+            <div class="nav-right-wrap">
+                <div class="nav-social-links">
+                    <a href="https://discord.gg/bzYDuUm24U" target="_blank" class="social-btn discord">
+                        <i class="fa-brands fa-discord"></i> Discord
+                    </a>
+                    <a href="https://t.me/Vareonstudioofc" target="_blank" class="social-btn telegram">
+                        <i class="fa-brands fa-telegram"></i> Telegram
+                    </a>
+                    <a href="https://vareonstudio.netlify.app/" target="_blank" class="social-btn dev-web">
+                        <i class="fa-solid fa-globe"></i> VAREON STUDIO
+                    </a>
+                </div>
+                
+                <!-- Get Started in Header for Mobile & Desktop -->
+                <button class="nav-getstarted-btn" onclick="startGetStarted()">
+                    Get Started <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </nav>
+
+        <main class="hero-container">
+            <div class="hero-badge">
+                <i class="fa-solid fa-shield-halved"></i> Next-Gen Encrypted Cloud Vault & OTP Automation
+            </div>
+            <h1 class="hero-title">Automate Email Testing & OTP Verification in Seconds</h1>
+            <p class="hero-desc">
+                Generate thousands of unique dot aliases, stream real-time verification codes live, and persist account credentials with Encrypted Edge Cloud Storage.
+            </p>
+            
+            <div class="hero-actions">
+                <button class="cta-btn" onclick="startGetStarted()">
+                    Get Started Now <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <a href="https://discord.gg/bzYDuUm24U" target="_blank" class="cta-btn discord-hero">
+                    <i class="fa-brands fa-discord"></i> Join Discord
+                </a>
+                <a href="https://t.me/Vareonstudioofc" target="_blank" class="cta-btn telegram-hero">
+                    <i class="fa-brands fa-telegram"></i> Telegram Support
+                </a>
+            </div>
+
+            <!-- 3D Interactive Mail & OTP Visual -->
+            <div class="hero-3d-visual">
+                <div class="mail-3d-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <i class="fa-solid fa-envelope" style="color:var(--accent); font-size:1.5rem;"></i>
+                        <span style="font-size:0.75rem; color:var(--emerald); background:rgba(16,185,129,0.15); padding:0.25rem 0.75rem; border-radius:99px; font-weight:700;">LIVE INBOX</span>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.85rem; font-weight:700;">no-reply@verification.com</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Your verification code is ready</div>
+                    </div>
+                    <div class="otp-3d-badge">
+                        849201
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supported Use Cases & Key Benefits Section -->
+            <div class="usecase-section">
+                <h3 class="usecase-title"><i class="fa-solid fa-layer-group" style="color:var(--accent)"></i> What You Can Test & Do With 10k Maile</h3>
+                <p class="usecase-sub">Powerful alias & OTP automation built for developers, QA testers & AI enthusiasts</p>
+                
+                <div class="demo-3d-cards">
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-solid fa-brain" style="color:var(--accent); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">AI Tools & Free Trial Testing</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Test ChatGPT, Midjourney, Claude, and AI platform free trials with unique dot aliases without needing multiple SIMs.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-brands fa-google-play" style="color:var(--emerald); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">App Publishing & Store Verification</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Verify APKs, Play Store developer accounts, and test app user onboarding flows automatically.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-solid fa-bolt" style="color:var(--purple); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">Realtime OTP Auto Fetch</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Receive 6-digit verification codes live without opening your Gmail inbox manually.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-solid fa-vault" style="color:var(--cyan); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">Encrypted Password Vault</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Save website names, URLs, and account passwords attached to each generated alias securely on SQL Edge.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-solid fa-code" style="color:var(--rose); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">Developer & QA Sandboxes</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Bulk test web applications, authentication APIs, and registration pipelines seamlessly.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-3d">
+                        <div>
+                            <i class="fa-solid fa-shield-virus" style="color:var(--amber); font-size:1.8rem; margin-bottom:0.75rem;"></i>
+                            <h4 style="margin-bottom:0.35rem;">Zero Inbox Spam Pollution</h4>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Keep your personal primary inbox clean while creating disposable testing aliases effortlessly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="landing-footer">
+            <div>
+                Developed with <i class="fa-solid fa-heart" style="color:var(--rose)"></i> by 
+                <a href="https://vareonstudio.netlify.app/" target="_blank" class="brand-tag" style="font-size:0.85rem;">VAREON STUDIO</a> &copy; 2026.
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap; justify-content:center;">
+                <a href="https://discord.gg/bzYDuUm24U" target="_blank" style="color:var(--text-muted); text-decoration:none; font-size:0.8rem;"><i class="fa-brands fa-discord"></i> Discord</a>
+                <span>•</span>
+                <a href="https://t.me/Vareonstudioofc" target="_blank" style="color:var(--text-muted); text-decoration:none; font-size:0.8rem;"><i class="fa-brands fa-telegram"></i> Telegram</a>
+                <span>•</span>
+                <a href="https://vareonstudio.netlify.app/" target="_blank" style="color:var(--text-muted); text-decoration:none; font-size:0.8rem;"><i class="fa-solid fa-globe"></i> Website</a>
+            </div>
+        </footer>
+    </section>
+
+    <!-- VIEW 2: AUTH SCREEN MODAL -->
+    <div class="modal-mask" id="authModalMask">
+        <div class="modal-box" style="text-align:center;">
+            <div class="no-select" style="margin: 0 auto 1rem auto; display:inline-block;">
+                <img src="/logo.png" alt="Logo" style="height:60px; width:auto;" oncontextmenu="return false;" draggable="false" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback-3d" style="width:60px; height:60px; font-size:1.8rem;"><i class="fa-solid fa-bolt"></i></div>
+            </div>
+            <h3 style="font-size:1.5rem; font-weight:800; margin-bottom:0.5rem;">Welcome to 10k Maile</h3>
+            <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:1.5rem; line-height:1.5;">Sign in with Google to sync your settings & encrypted credentials.</p>
+            
+            <button class="btn-action" style="background:white; color:#111; font-size:0.95rem; box-shadow: 0 4px 20px rgba(255,255,255,0.25);" onclick="loginWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G" style="pointer-events:none;">
+                Sign In with Google
             </button>
+            
+            <div style="margin-top:1.5rem; font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+                Powered by <a href="https://vareonstudio.netlify.app/" target="_blank" style="color:var(--accent); text-decoration:none;">VAREON STUDIO</a> Architecture
+            </div>
         </div>
     </div>
 
-    <!-- 2. Main Dashboard View -->
-    <div id="dashboard-view">
-        <div class="container">
-            <!-- Setup Panel -->
-            <div class="panel">
-                <div class="profile-badge" id="profileBadge" onclick="logout()" title="Click to logout">
-                    <img id="userPhoto" src="" alt="">
-                    <span id="userName">User</span>
+    <!-- VIEW 3: DASHBOARD PAGE -->
+    <section id="dashboard-view" class="view-section">
+        <!-- Top Nav -->
+        <nav class="dash-nav">
+            <div class="brand-logo-container no-select">
+                <img src="/logo.png" alt="10k Maile Logo" class="brand-logo-img" oncontextmenu="return false;" draggable="false" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback-3d"><i class="fa-solid fa-bolt"></i></div>
+                <div>
+                    <div style="line-height:1.2;">10k Maile</div>
+                    <a href="https://vareonstudio.netlify.app/" target="_blank" class="brand-tag" style="font-size:0.65rem;">VAREON STUDIO</a>
                 </div>
-
-                <h2><i class="fa-solid fa-gear"></i> Setup Manager</h2>
-                <p class="subtitle">Connect your Gmail to start receiving OTP codes automatically.</p>
-                
-                <div class="form-group">
-                    <label>Gmail Address</label>
-                    <div class="input-wrapper">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input type="email" id="mainEmail" placeholder="your.email@gmail.com" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="label-wrap">
-                        <label>App Password (16-digits)</label>
-                        <i class="fa-solid fa-circle-info info-icon" onclick="openModal('infoModal')" title="How to get this?"></i>
-                    </div>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-key"></i>
-                        <input type="password" id="mainPassword" placeholder="abcd efgh ijkl mnop">
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button id="startBtn" class="primary" onclick="toggleMonitor()">
-                        <i class="fa-solid fa-link"></i> Connect & Start Monitor
-                    </button>
-                    <button class="secondary" onclick="generateEmails()">
-                        <i class="fa-solid fa-bolt"></i> Create New Bypass Emails
-                    </button>
-                </div>
-
-                <div id="emailList" class="generated-emails"></div>
             </div>
 
-            <!-- Dashboard Panel -->
-            <div class="panel">
-                <div class="dashboard-header">
-                    <h2><i class="fa-solid fa-inbox"></i> Live Inbox</h2>
-                    <div id="monitorStatus" class="status-indicator">
-                        <div class="status-dot"></div>
+            <div class="user-profile-badge" onclick="logout()" title="Click to Logout">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="U" oncontextmenu="return false;" draggable="false">
+                <div>
+                    <div id="userName" style="font-weight:800; font-size:0.85rem;">User Account</div>
+                    <div id="userEmail" style="font-size:0.7rem; color:var(--text-muted);">Sync Active</div>
+                </div>
+                <i class="fa-solid fa-right-from-bracket" style="color:var(--rose); margin-left:0.5rem; font-size:0.9rem;"></i>
+            </div>
+        </nav>
+
+        <!-- Grid Workspace -->
+        <div class="main-grid">
+            <!-- Panel 1: Setup & Generator -->
+            <div class="panel-card">
+                <div class="section-title"><i class="fa-solid fa-sliders" style="color:var(--accent);"></i> Setup & Configuration</div>
+                <div class="section-sub">Configure Gmail IMAP connection to enable live OTP reception.</div>
+
+                <div class="form-group">
+                    <label>Gmail Address</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="inputEmail" placeholder="example@gmail.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="label-flex">
+                        <label>App Password (16-Digit)</label>
+                        <span style="color:var(--accent); cursor:pointer; font-size:0.8rem; font-weight:700;" onclick="openModal('infoModal')"><i class="fa-solid fa-circle-question"></i> How to get?</span>
+                    </div>
+                    <div class="input-box">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="inputAppPass" placeholder="abcd efgh ijkl mnop">
+                    </div>
+                </div>
+
+                <button id="btnConnect" class="btn-action btn-primary" onclick="toggleConnect()">
+                    <i class="fa-solid fa-plug"></i> Connect & Start Monitoring
+                </button>
+
+                <button class="btn-action btn-secondary" onclick="generateBypassEmails()">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);"></i> Generate Bypass Emails
+                </button>
+
+                <div id="aliasList" class="alias-container"></div>
+            </div>
+
+            <!-- Panel 2: Live Inbox -->
+            <div class="panel-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                    <div>
+                        <div class="section-title"><i class="fa-solid fa-inbox" style="color:var(--emerald);"></i> Realtime Inbox</div>
+                        <div class="section-sub" style="margin-bottom:0;">Automated OTP extraction pipeline</div>
+                    </div>
+                    <div id="statusIndicator" class="status-pill">
+                        <div class="pulse-dot"></div>
                         <span id="statusText">Disconnected</span>
                     </div>
                 </div>
 
-                <div id="otpContainer" class="otp-list">
-                    <div class="empty-state">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <h3>Secure Mailbox</h3>
-                        <p style="margin-top:0.5rem;">Waiting for connection...</p>
+                <div id="otpContainer" class="otp-cards-wrapper">
+                    <div style="margin:auto; text-align:center; color:var(--text-muted); padding:3rem 1rem;">
+                        <i class="fa-solid fa-satellite-dish" style="font-size:2.8rem; margin-bottom:1rem; opacity:0.35;"></i>
+                        <h4>Waiting for Connection</h4>
+                        <p style="font-size:0.85rem; margin-top:0.35rem;">Connect your account to listen for incoming OTPs live.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Instruction Modal -->
-    <div class="modal-overlay" id="infoModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="font-weight: 600;"><i class="fa-solid fa-key"></i> How to get App Password</h3>
-                <button class="close-btn" onclick="closeModal('infoModal')"><i class="fa-solid fa-xmark"></i></button>
+    <!-- MODAL: INFO / APP PASS STEPS -->
+    <div class="modal-mask" id="infoModal">
+        <div class="modal-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                <h4 style="font-size:1.2rem; font-weight:800;"><i class="fa-solid fa-shield-cat" style="color:var(--accent);"></i> How to Create App Password</h4>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.2rem;" onclick="closeModal('infoModal')"></i>
             </div>
-            <div class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-text">Go to your <a href="https://myaccount.google.com/security" target="_blank" style="color:var(--primary)">Google Account Security</a>.</div>
+            <div style="display:flex; flex-direction:column; gap:1rem; font-size:0.875rem; line-height:1.5;">
+                <div style="display:flex; gap:0.85rem;">
+                    <div style="background:var(--accent); color:white; width:26px; height:26px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; flex-shrink:0;">1</div>
+                    <div>Go to Google Security Settings (<a href="https://myaccount.google.com/security" target="_blank" style="color:var(--accent);">Google Security</a>).</div>
+                </div>
+                <div style="display:flex; gap:0.85rem;">
+                    <div style="background:var(--accent); color:white; width:26px; height:26px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; flex-shrink:0;">2</div>
+                    <div>Ensure <strong>2-Step Verification</strong> is enabled.</div>
+                </div>
+                <div style="display:flex; gap:0.85rem;">
+                    <div style="background:var(--accent); color:white; width:26px; height:26px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; flex-shrink:0;">3</div>
+                    <div>Navigate to <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent);">App Passwords</a>.</div>
+                </div>
+                <div style="display:flex; gap:0.85rem;">
+                    <div style="background:var(--accent); color:white; width:26px; height:26px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; flex-shrink:0;">4</div>
+                    <div>Generate a 16-letter code and paste it into the setup box.</div>
+                </div>
             </div>
-            <div class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-text">Turn ON <b>2-Step Verification</b>.</div>
-            </div>
-            <div class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-text">Click on <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--primary)">App Passwords</a> at the bottom.</div>
-            </div>
-            <div class="step-item">
-                <div class="step-num">4</div>
-                <div class="step-text">Create a new app, copy the 16-letter code, and paste it here.</div>
-            </div>
-            <button class="primary" style="margin-top: 1.5rem;" onclick="closeModal('infoModal')">Understood</button>
+            <button class="btn-action btn-primary" style="margin-top:1.5rem;" onclick="closeModal('infoModal')">Got it!</button>
         </div>
     </div>
 
-    <!-- Vault Save Modal -->
-    <div class="modal-overlay" id="vaultModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="font-weight: 600; color: #8b5cf6;"><i class="fa-solid fa-vault"></i> Save to Vault</h3>
-                <button class="close-btn" onclick="closeModal('vaultModal')"><i class="fa-solid fa-xmark"></i></button>
+    <!-- MODAL: VAULT SAVE -->
+    <div class="modal-mask" id="vaultModal">
+        <div class="modal-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h4 style="font-size:1.2rem; font-weight:800; color:var(--purple);"><i class="fa-solid fa-vault"></i> Save to Encrypted Vault</h4>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.2rem;" onclick="closeModal('vaultModal')"></i>
             </div>
-            <p class="subtitle" style="margin-top:-10px;">Email: <span id="vaultEmailDisplay" style="color:white;font-weight:600;"></span></p>
-            
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Alias: <span id="vaultTargetEmail" style="color:white; font-weight:700;"></span></div>
+
             <div class="form-group">
-                <label>Website Name</label>
-                <div class="input-wrapper">
+                <label>Website / Service Name</label>
+                <div class="input-box">
                     <i class="fa-solid fa-globe"></i>
-                    <input type="text" id="vaultSite" placeholder="e.g. Apkpure">
+                    <input type="text" id="vaultSite" placeholder="e.g. Apkpure / Facebook">
                 </div>
             </div>
             <div class="form-group">
                 <label>URL (Optional)</label>
-                <div class="input-wrapper">
+                <div class="input-box">
                     <i class="fa-solid fa-link"></i>
-                    <input type="text" id="vaultUrl" placeholder="https://apkpure.com">
+                    <input type="text" id="vaultUrl" placeholder="https://example.com">
                 </div>
             </div>
             <div class="form-group">
                 <label>Account Password</label>
-                <div class="input-wrapper">
+                <div class="input-box">
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="vaultPassword" placeholder="Strong Password">
+                    <input type="password" id="vaultPass" placeholder="Account Password">
                 </div>
             </div>
-            <button class="primary" style="margin-top: 0.5rem; background:#8b5cf6; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);" onclick="saveToVault()">Save Securely</button>
+
+            <button class="btn-action" style="background:linear-gradient(135deg, var(--purple), #8b5cf6); color:white;" onclick="submitVaultData()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Save to Encrypted Vault
+            </button>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast">Connected Successfully!</div>
+    <div id="toast" class="toast-msg">Notification</div>
 
-    <!-- Firebase SDK (v10 modular) -->
+    <!-- Firebase Script Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // User provided config
         const firebaseConfig = {
             apiKey: "AIzaSyBcX6HQ3Mg9BhgD_J5V5-y4hxkmSfSwPHY",
             authDomain: "kmaile-7c2e9.firebaseapp.com",
@@ -377,262 +761,252 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        const WORKER_URL = "https://10kmaile.nayem544-gaxi.workers.dev/";
         let currentUserUid = null;
-        const CLOUDFLARE_WORKER_URL = "https://10kmaile.nayem544-gaxi.workers.dev/";
+        let isConnected = false;
+        let pollTimer = null;
+        let cachedOtps = [];
+        let selectedVaultEmail = "";
 
-        // DOM Elements
-        const loginView = document.getElementById('login-view');
-        const dashboardView = document.getElementById('dashboard-view');
-        
-        // Expose functions to global scope for HTML inline handlers
-        window.loginWithGoogle = () => {
-            signInWithPopup(auth, provider).catch(err => window.showToast("Login Failed: " + err.message, true));
+        // UI Handlers
+        window.startGetStarted = () => {
+            if (currentUserUid) {
+                switchView('dashboard-view');
+            } else {
+                openModal('authModalMask');
+            }
         };
-        document.getElementById('googleLoginBtn').addEventListener('click', window.loginWithGoogle);
+
+        window.loginWithGoogle = () => {
+            signInWithPopup(auth, provider)
+                .then(() => closeModal('authModalMask'))
+                .catch(e => showToast("Auth Error: " + e.message, true));
+        };
 
         window.logout = () => signOut(auth);
 
-        // Auth State Observer
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
-                loginView.style.display = 'none';
-                dashboardView.style.display = 'block';
+                document.getElementById('userName').innerText = user.displayName || "User";
+                document.getElementById('userEmail').innerText = user.email;
+                if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
                 
-                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
-                document.getElementById('userPhoto').src = user.photoURL;
-                
-                window.showToast(`Welcome back, ${user.displayName}!`);
-                loadSetupData();
+                closeModal('authModalMask');
+                switchView('dashboard-view');
+                loadSavedCloudSetup();
             } else {
                 currentUserUid = null;
-                loginView.style.display = 'flex';
-                dashboardView.style.display = 'none';
-                if(window.pollInterval) clearInterval(window.pollInterval);
+                switchView('landing-view');
+                if (pollTimer) clearInterval(pollTimer);
             }
         });
 
-        // ----------------------------------------------------
-        // Cloudflare Integration
-        // ----------------------------------------------------
-        async function fetchFromCloudflare(action, payload = {}) {
-            if(!currentUserUid) return null;
-            try {
-                const res = await fetch(CLOUDFLARE_WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: currentUserUid, action: action, data: payload })
-                });
-                return await res.json();
-            } catch(e) { console.error("Cloudflare Error:", e); return null; }
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
         }
-
-        async function loadSetupData() {
-            // Ask cloudflare for saved email/app password
-            const data = await fetchFromCloudflare("get_setup");
-            if(data && data.email) {
-                document.getElementById('mainEmail').value = data.email;
-                document.getElementById('mainPassword').value = data.appPassword;
-            }
-        }
-
-        async function saveSetupData(email, appPassword) {
-            await fetchFromCloudflare("save_setup", { email, appPassword });
-        }
-
-        // Vault Logic
-        let currentVaultEmail = "";
-        window.openVaultModal = (email) => {
-            currentVaultEmail = email;
-            document.getElementById('vaultEmailDisplay').innerText = email;
-            document.getElementById('vaultSite').value = "";
-            document.getElementById('vaultUrl').value = "";
-            document.getElementById('vaultPassword').value = "";
-            window.openModal('vaultModal');
-        };
-
-        window.saveToVault = async () => {
-            const site = document.getElementById('vaultSite').value;
-            const url = document.getElementById('vaultUrl').value;
-            const pass = document.getElementById('vaultPassword').value;
-            
-            if(!site || !pass) return window.showToast("Website Name and Password required!", true);
-
-            const btn = document.querySelector('#vaultModal button.primary');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-            
-            const res = await fetchFromCloudflare("save_vault", {
-                email: currentVaultEmail, website: site, url: url, password: pass, date: new Date().toISOString()
-            });
-
-            btn.innerHTML = 'Save Securely';
-            window.closeModal('vaultModal');
-            window.showToast("Saved to Cloudflare Vault!");
-        };
-
-        // ----------------------------------------------------
-        // Core App Logic
-        // ----------------------------------------------------
-        window.pollInterval = null;
-        let isRunning = false;
-        let allOtps = [];
-
-        window.showToast = (msg, isError = false) => {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.className = 'toast show ' + (isError ? 'error' : '');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        };
 
         window.openModal = (id) => document.getElementById(id).classList.add('active');
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
 
-        window.toggleMonitor = async () => {
-            const btn = document.getElementById('startBtn');
-            const status = document.getElementById('monitorStatus');
-            const statusText = document.getElementById('statusText');
-            const email = document.getElementById('mainEmail').value.trim();
-            const password = document.getElementById('mainPassword').value.trim();
+        window.showToast = (msg, isErr = false) => {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'toast-msg show ' + (isErr ? 'error' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        };
 
-            if (!isRunning) {
-                if (!email || !password) return window.showToast('Email and Password required', true);
+        // Cloud Storage Sync
+        async function sendToWorker(action, data = {}) {
+            if (!currentUserUid) return null;
+            try {
+                const res = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUserUid, action, data })
+                });
+                return await res.json();
+            } catch(e) { console.error("Cloud storage sync error:", e); return null; }
+        }
+
+        async function loadSavedCloudSetup() {
+            const setup = await sendToWorker("get_setup");
+            if (setup && setup.email) {
+                document.getElementById('inputEmail').value = setup.email;
+                document.getElementById('inputAppPass').value = setup.appPassword;
+                showToast("Encrypted Cloud settings synced!");
+            }
+        }
+
+        // Connection & Verification
+        window.toggleConnect = async () => {
+            const btn = document.getElementById('btnConnect');
+            const email = document.getElementById('inputEmail').value.trim();
+            const pass = document.getElementById('inputAppPass').value.trim();
+
+            if (!isConnected) {
+                if (!email || !pass) return showToast("Please enter email & App password", true);
                 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
                 
                 try {
                     const res = await fetch('/api/verify_connection', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({email, password})
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password: pass })
                     });
                     const data = await res.json();
-                    
-                    if (data.status === 'success') {
-                        window.showToast('Email Connected!');
-                        saveSetupData(email, password); // Save to Cloudflare
-                        
-                        isRunning = true;
-                        btn.innerHTML = '<i class="fa-solid fa-stop"></i> Stop Monitor';
-                        btn.classList.remove('primary'); btn.classList.add('danger');
-                        status.classList.add('active'); statusText.innerText = 'Listening for OTPs...';
-                        
-                        document.getElementById('otpContainer').innerHTML = `
-                            <div class="empty-state">
-                                <i class="fa-solid fa-satellite-dish fa-beat" style="--fa-animation-duration: 2s;"></i>
-                                <h3>Listening...</h3>
-                                <p style="margin-top:0.5rem;">New OTPs will appear here automatically.</p>
-                            </div>
-                        `;
 
-                        window.checkEmails(email, password);
-                        window.pollInterval = setInterval(() => window.checkEmails(email, password), 5000);
+                    if (data.status === 'success') {
+                        isConnected = true;
+                        showToast("Gmail Connected Successfully!");
+                        
+                        // Sync to Encrypted Cloud
+                        sendToWorker("save_setup", { email, appPassword: pass });
+
+                        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> Stop Monitoring';
+                        btn.className = 'btn-action btn-danger';
+                        
+                        const statusPill = document.getElementById('statusIndicator');
+                        statusPill.classList.add('active');
+                        document.getElementById('statusText').innerText = "Listening...";
+
+                        fetchOtps(email, pass);
+                        pollTimer = setInterval(() => fetchOtps(email, pass), 5000);
                     } else {
-                        window.showToast(data.message || 'Connection Failed', true);
-                        btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
+                        showToast(data.message || "Connection Failed", true);
+                        btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
                     }
-                } catch (err) {
-                    window.showToast('Server Error. Make sure backend is running.', true);
-                    btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
+                } catch(err) {
+                    showToast("Server Connection Error", true);
+                    btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
                 }
             } else {
-                isRunning = false;
-                btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
-                btn.classList.remove('danger'); btn.classList.add('primary');
-                status.classList.remove('active'); statusText.innerText = 'Disconnected';
-                clearInterval(window.pollInterval);
-                window.showToast('Monitor Stopped');
+                isConnected = false;
+                if(pollTimer) clearInterval(pollTimer);
+                btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
+                btn.className = 'btn-action btn-primary';
+                
+                const statusPill = document.getElementById('statusIndicator');
+                statusPill.classList.remove('active');
+                document.getElementById('statusText').innerText = "Disconnected";
+                showToast("Monitoring Stopped");
             }
         };
 
-        window.generateEmails = async () => {
-            const email = document.getElementById('mainEmail').value.trim();
-            if (!email) return window.showToast('Enter your Gmail address first', true);
-
-            const btn = document.querySelector('.secondary');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+        // Bypass Generators
+        window.generateBypassEmails = async () => {
+            const email = document.getElementById('inputEmail').value.trim();
+            if (!email) return showToast("Enter Gmail address first!", true);
 
             try {
                 const res = await fetch('/api/generate', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email})
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
                 });
                 const data = await res.json();
-                const list = document.getElementById('emailList');
-                list.innerHTML = '';
                 
-                data.emails.forEach(e => {
-                    const div = document.createElement('div');
-                    div.className = 'email-item';
-                    div.innerHTML = `
-                        <span class="email-text">${e}</span>
-                        <div class="action-btns">
-                            <button class="icon-btn vault-btn" onclick="openVaultModal('${e}')" title="Save to Vault">
+                const container = document.getElementById('aliasList');
+                container.innerHTML = '';
+                
+                data.emails.forEach(alias => {
+                    const item = document.createElement('div');
+                    item.className = 'alias-item';
+                    item.innerHTML = `
+                        <span class="alias-text">${alias}</span>
+                        <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                            <button class="action-icon-btn vault" title="Save to Vault" onclick="openVaultModal('${alias}')">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
-                            <button class="icon-btn" onclick="copyToClipboard('${e}', this)" title="Copy">
+                            <button class="action-icon-btn" title="Copy Email" onclick="copyText('${alias}', this)">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
                     `;
-                    list.appendChild(div);
+                    container.appendChild(item);
                 });
-                list.style.display = 'block';
-                window.showToast(`${data.emails.length} Emails Created!`);
-            } catch (err) {
-                window.showToast('Error generating emails', true);
-            } finally {
-                btn.innerHTML = originalHtml;
-            }
+                container.style.display = 'block';
+                showToast(`${data.emails.length} Dot Aliases Generated!`);
+            } catch(e) { showToast("Generation failed", true); }
         };
 
-        window.copyToClipboard = (text, btnElement) => {
+        window.copyText = (text, btn) => {
             navigator.clipboard.writeText(text);
-            const icon = btnElement.querySelector('i');
-            icon.className = 'fa-solid fa-check'; icon.style.color = 'var(--success)';
+            const icon = btn.querySelector('i');
+            icon.className = 'fa-solid fa-check';
+            icon.style.color = 'var(--emerald)';
             setTimeout(() => { icon.className = 'fa-regular fa-copy'; icon.style.color = ''; }, 2000);
         };
 
-        window.checkEmails = async (email, password) => {
+        // Vault
+        window.openVaultModal = (alias) => {
+            selectedVaultEmail = alias;
+            document.getElementById('vaultTargetEmail').innerText = alias;
+            openModal('vaultModal');
+        };
+
+        window.submitVaultData = async () => {
+            const site = document.getElementById('vaultSite').value.trim();
+            const url = document.getElementById('vaultUrl').value.trim();
+            const pass = document.getElementById('vaultPass').value.trim();
+
+            if (!site || !pass) return showToast("Site name & password required!", true);
+
+            const res = await sendToWorker("save_vault", {
+                email: selectedVaultEmail, website: site, url, password: pass, date: new Date().toISOString()
+            });
+
+            closeModal('vaultModal');
+            showToast("Saved to Encrypted Cloud Vault!");
+        };
+
+        // OTP Fetcher
+        async function fetchOtps(email, password) {
             try {
                 const res = await fetch('/api/check_emails', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password})
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
                 
                 if (data.status === 'success' && data.otps.length > 0) {
-                    let newFound = false;
-                    data.otps.forEach(newOtp => {
-                        const exists = allOtps.find(o => o.otp === newOtp.otp && o.time === newOtp.time);
-                        if (!exists) {
-                            allOtps.unshift(newOtp);
-                            newFound = true;
-                            // Optionally send OTP history to cloudflare here
-                            fetchFromCloudflare("save_otp_history", newOtp);
+                    let fresh = false;
+                    data.otps.forEach(o => {
+                        if (!cachedOtps.some(c => c.otp === o.otp && c.time === o.time)) {
+                            cachedOtps.unshift(o);
+                            fresh = true;
+                            sendToWorker("save_otp_history", o);
                         }
                     });
-                    if (newFound) window.renderOtps();
+                    if (fresh) renderOtps();
                 }
-            } catch (err) { console.error("Polling error:", err); }
-        };
-        
-        window.renderOtps = () => {
+            } catch(e) { console.error("OTP poll error", e); }
+        }
+
+        function renderOtps() {
             const container = document.getElementById('otpContainer');
-            if (allOtps.length > 0) {
+            if (cachedOtps.length > 0) {
                 container.innerHTML = '';
-                allOtps.forEach(item => {
+                cachedOtps.forEach(item => {
                     container.innerHTML += `
-                        <div class="otp-card">
-                            <div class="otp-meta">
-                                <div class="sender"><i class="fa-solid fa-user-circle" style="color:var(--text-muted)"></i> ${item.sender}</div>
-                                <div class="time"><i class="fa-regular fa-clock"></i> ${item.time}</div>
+                        <div class="otp-card-item">
+                            <div>
+                                <div style="font-weight:700; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                    <i class="fa-solid fa-paper-plane" style="color:var(--accent);"></i> ${item.sender}
+                                </div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">
+                                    <i class="fa-regular fa-clock"></i> ${item.time}
+                                </div>
                             </div>
-                            <div class="otp-code">${item.otp}</div>
+                            <div class="otp-code-badge">${item.otp}</div>
                         </div>
                     `;
                 });
             }
-        };
+        }
     </script>
 </body>
 </html>
