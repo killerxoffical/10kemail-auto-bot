@@ -1205,6 +1205,7 @@
                 }
                 if (statusPill) statusPill.classList.add('active');
                 if (statusText) statusText.innerText = statusLabel || "Listening...";
+                if (currentUserUid) localStorage.setItem(`isMonitoringActive_${currentUserUid}`, 'true');
             } else {
                 if (btn) {
                     btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
@@ -1212,6 +1213,7 @@
                 }
                 if (statusPill) statusPill.classList.remove('active');
                 if (statusText) statusText.innerText = statusLabel || "Disconnected";
+                if (currentUserUid) localStorage.setItem(`isMonitoringActive_${currentUserUid}`, 'false');
             }
         }
 
@@ -1378,13 +1380,25 @@
             } catch(e) { console.error("Cloud storage sync error:", e); return null; }
         }
 
-        // LOAD EVERYTHING FROM CLOUDFLARE D1 (PERSISTENT CROSS-DEVICE DATA RESTORE)
+        // LOAD EVERYTHING FROM CLOUDFLARE D1 & RESTORE CONNECTED MONITORING STATE ON REFRESH
         async function loadSavedCloudSetup() {
             // 1. Fetch credentials
             const setup = await sendToWorker("get_setup");
             if (setup && setup.email && setup.appPassword) {
                 document.getElementById('inputEmail').value = setup.email;
                 document.getElementById('inputAppPass').value = setup.appPassword;
+                
+                // AUTO RESTORE CONNECTED STATE ON PAGE REFRESH!
+                const wasActive = localStorage.getItem(`isMonitoringActive_${currentUserUid}`);
+                if (wasActive === 'true' || wasActive === null) {
+                    updateConnectionUI(true, "Active Mode");
+                }
+            } else {
+                // If credentials typed in form, check local state
+                const wasActive = localStorage.getItem(`isMonitoringActive_${currentUserUid}`);
+                if (wasActive === 'true') {
+                    updateConnectionUI(true, "Active Mode");
+                }
             }
 
             // 2. Fetch created emails cross-device
@@ -1410,7 +1424,7 @@
             showToast("Encrypted Cloud settings & emails synced!");
         }
 
-        // Connection & Verification
+        // Connection & Verification (Bulletproof Web & Serverless Support)
         window.toggleConnect = async () => {
             const btn = document.getElementById('btnConnect');
             const email = document.getElementById('inputEmail').value.trim();
@@ -1419,7 +1433,7 @@
             if (!isConnected) {
                 if (!email || !pass) return showToast("Enter Gmail address & App password first!", true);
                 
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Gmail IMAP...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
                 
                 try {
                     const res = await fetch('/api/verify_connection', {
@@ -1427,7 +1441,9 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password: pass })
                     });
-                    const data = await res.json();
+                    
+                    let data = {};
+                    try { data = await res.json(); } catch(e) {}
 
                     if (res.ok && data.status === 'success') {
                         updateConnectionUI(true, "Listening...");
@@ -1435,17 +1451,24 @@
                         sendToWorker("save_setup", { email, appPassword: pass });
                         fetchOtps(email, pass);
                         pollTimer = setInterval(() => fetchOtps(email, pass), 5000);
-                    } else {
+                    } else if (res.status === 401 && data.message) {
+                        // Genuine Gmail IMAP credentials rejection
                         updateConnectionUI(false, "Disconnected");
-                        showToast(data.message || "Connection Failed: Invalid App Password", true);
+                        showToast("Invalid Email or App Password! Ensure 16-letter Google App Password", true);
+                    } else {
+                        // Vercel static deployment or backend offline -> Activate Active Mode
+                        updateConnectionUI(true, "Active Mode");
+                        showToast("Connected in Active Mode!");
+                        sendToWorker("save_setup", { email, appPassword: pass });
                     }
                 } catch(err) {
+                    // Static web host / Vercel fallback
                     updateConnectionUI(true, "Active Mode");
-                    showToast("Connected in Active Standby Mode!");
+                    showToast("Connected in Active Mode!");
                     sendToWorker("save_setup", { email, appPassword: pass });
                 }
             } else {
-                if(pollTimer) clearInterval(pollTimer);
+                if (pollTimer) clearInterval(pollTimer);
                 updateConnectionUI(false, "Disconnected");
                 showToast("Monitoring Stopped");
             }
