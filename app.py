@@ -33,9 +33,17 @@ def decode_mime_words(s):
         for word, encoding in decode_header(s))
 
 def extract_otp(text):
-    match = re.search(r'\b\d{6}\b', text)
+    if not text:
+        return None
+    # Matches 4 to 8 digit codes in subject/body
+    match = re.search(r'(?:code|otp|pin|is|verification|passcode)?\s*[:\s]*\b(\d{4,8})\b', text, re.IGNORECASE)
     if match:
-        return match.group(0)
+        return match.group(1)
+        
+    match_fallback = re.search(r'\b\d{4,8}\b', text)
+    if match_fallback:
+        return match_fallback.group(0)
+        
     return None
 
 @app.route('/')
@@ -92,33 +100,41 @@ def check_emails():
         mail.login(monitor_email, monitor_password)
         mail.select("inbox")
         
+        # Search recent messages (UNSEEN first, fallback ALL)
         status, messages = mail.search(None, 'UNSEEN')
+        msg_ids = messages[0].split() if (status == "OK" and messages[0]) else []
         
-        if status == "OK" and messages[0]:
-            for msg_id in messages[0].split():
-                status, msg_data = mail.fetch(msg_id, "(RFC822)")
-                
-                for response_part in msg_data:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_bytes(response_part[1])
-                        sender = decode_mime_words(msg.get("From", "Unknown"))
-                        
-                        body = ""
-                        if msg.is_multipart():
-                            for part in msg.walk():
-                                if part.get_content_type() == "text/plain":
-                                    body = part.get_payload(decode=True).decode(errors='ignore')
-                                    break
-                        else:
-                            body = msg.get_payload(decode=True).decode(errors='ignore')
-                        
-                        otp = extract_otp(body)
-                        if otp:
-                            otps_found.append({
-                                'sender': sender,
-                                'time': datetime.now().strftime("%I:%M:%S %p"),
-                                'otp': otp
-                            })
+        if not msg_ids:
+            status_all, messages_all = mail.search(None, 'ALL')
+            if status_all == "OK" and messages_all[0]:
+                msg_ids = messages_all[0].split()[-15:] # Check last 15 emails
+        
+        for msg_id in msg_ids:
+            status, msg_data = mail.fetch(msg_id, "(RFC822)")
+            
+            for response_part in msg_data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    subject = decode_mime_words(msg.get("Subject", ""))
+                    sender = decode_mime_words(msg.get("From", "Unknown"))
+                    
+                    body = ""
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            if part.get_content_type() == "text/plain":
+                                body = part.get_payload(decode=True).decode(errors='ignore')
+                                break
+                    else:
+                        body = msg.get_payload(decode=True).decode(errors='ignore')
+                    
+                    # Extract from Subject first, then Body
+                    otp = extract_otp(subject) or extract_otp(body)
+                    if otp:
+                        otps_found.append({
+                            'sender': sender,
+                            'time': datetime.now().strftime("%I:%M:%S %p"),
+                            'otp': otp
+                        })
         
         mail.close()
         mail.logout()
