@@ -1604,7 +1604,10 @@
             currentDetailEmail = alias;
             document.getElementById('detailTargetEmail').innerText = alias;
 
-            const matchingOtp = cachedOtps.find(o => o.receiver === alias || o.sender.includes(alias));
+            const matchingOtp = cachedOtps.find(o => 
+                (o.receiver && o.receiver.toLowerCase().includes(alias.toLowerCase())) || 
+                (o.sender && o.sender.toLowerCase().includes(alias.toLowerCase()))
+            );
             const boxesContainer = document.getElementById('detailOtpBoxesContainer');
             const meta = document.getElementById('detailOtpMeta');
 
