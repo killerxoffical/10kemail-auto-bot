@@ -954,7 +954,12 @@
                 <div class="panel-card">
                     <div class="section-title">
                         <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--emerald);"></i> Realtime OTP History</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(Auto 7-day prune)</span>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(Auto 7-day prune)</span>
+                            <button onclick="manualRefreshOtps(event)" class="refresh-icon-btn" title="Refresh Live OTPs">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="otpContainer" class="otp-cards-wrapper">
@@ -1679,6 +1684,23 @@
         };
 
         // OTP Fetcher & 7-Day Auto Prune Cleanup
+        window.manualRefreshOtps = async (ev) => {
+            const icon = ev?.currentTarget?.querySelector('i');
+            if (icon) icon.classList.add('fa-spin');
+            
+            const email = document.getElementById('inputEmail').value.trim();
+            const pass = document.getElementById('inputAppPass').value.trim();
+
+            if (email && pass) {
+                await fetchOtps(email, pass);
+            }
+            
+            setTimeout(() => {
+                if (icon) icon.classList.remove('fa-spin');
+                showToast("OTP History Refreshed!");
+            }, 800);
+        };
+
         async function fetchOtps(email, password) {
             try {
                 const res = await fetch('/api/check_emails', {
