@@ -808,7 +808,7 @@
     <!-- Firebase Script Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBcX6HQ3Mg9BhgD_J5V5-y4hxkmSfSwPHY",
@@ -823,6 +823,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
         const WORKER_URL = "https://10kmaile.nayem544-gaxi.workers.dev/";
         let currentUserUid = null;
@@ -830,15 +831,6 @@
         let pollTimer = null;
         let cachedOtps = [];
         let selectedVaultEmail = "";
-
-        // Handle Redirect Result on page reload if popup was blocked
-        getRedirectResult(auth).then((result) => {
-            if (result && result.user) {
-                showToast(`Signed in as ${result.user.displayName}`);
-            }
-        }).catch((err) => {
-            console.error("Redirect Error:", err);
-        });
 
         // UI Handlers
         window.startGetStarted = () => {
@@ -853,9 +845,10 @@
             signInWithPopup(auth, provider)
                 .then(() => closeModal('authModalMask'))
                 .catch(e => {
-                    if (e.code === 'auth/popup-blocked' || e.message.includes('popup')) {
-                        showToast("Popup blocked! Redirecting to Google Login...");
-                        signInWithRedirect(auth, provider);
+                    if (e.code === 'auth/popup-blocked') {
+                        showToast("Please allow popups in your browser address bar!", true);
+                    } else if (e.code === 'auth/popup-closed-by-user') {
+                        showToast("Login cancelled by user.", true);
                     } else {
                         showToast("Auth Error: " + e.message, true);
                     }
