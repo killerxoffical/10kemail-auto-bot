@@ -1711,9 +1711,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
+
                 const data = await res.json();
                 
-                if (data.status === 'success' && data.otps.length > 0) {
+                if (data.status === 'success' && data.otps && data.otps.length > 0) {
                     let fresh = false;
                     data.otps.forEach(o => {
                         if (!cachedOtps.some(c => c.otp === o.otp && c.time === o.time)) {

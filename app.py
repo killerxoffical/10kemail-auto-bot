@@ -97,7 +97,7 @@ def verify_connection():
         return jsonify({"status": "error", "message": "Email and password required"}), 400
 
     try:
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", timeout=10)
         mail.login(monitor_email, monitor_password)
         mail.logout()
         return jsonify({"status": "success", "message": "Connection verified"})
