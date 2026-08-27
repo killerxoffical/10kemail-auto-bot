@@ -49,6 +49,25 @@ def api_generate():
     emails = generate_dot_emails(email_addr)
     return jsonify({"emails": emails})
 
+@app.route('/api/verify_connection', methods=['POST'])
+def verify_connection():
+    data = request.json
+    monitor_email = data.get('email', '')
+    monitor_password = data.get('password', '')
+    
+    if not monitor_email or not monitor_password:
+        return jsonify({"status": "error", "message": "Email and password required"}), 400
+
+    try:
+        mail = imaplib.IMAP4_SSL("imap.gmail.com")
+        mail.login(monitor_email, monitor_password)
+        mail.logout()
+        return jsonify({"status": "success", "message": "Connection verified"})
+    except imaplib.IMAP4.error:
+        return jsonify({"status": "error", "message": "Invalid Email or App Password"}), 401
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/check_emails', methods=['POST'])
 def check_emails():
     data = request.json
@@ -102,6 +121,5 @@ def check_emails():
         print(f"IMAP Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# Vercel requires the app variable to be exposed, but we also keep this for local testing
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
