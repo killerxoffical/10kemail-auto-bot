@@ -344,6 +344,19 @@
             outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: rgba(0, 0, 0, 0.65);
         }
 
+        .search-box-wrap {
+            position: relative; display: flex; align-items: center; width: 100%; margin-bottom: 0.75rem;
+        }
+        .search-box-wrap i { position: absolute; left: 1rem; color: var(--text-muted); font-size: 0.85rem; }
+        .search-box-wrap input {
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.5rem; border-radius: 12px;
+            background: rgba(0, 0, 0, 0.35); border: 1px solid var(--panel-border);
+            color: white; font-size: 0.825rem; transition: all 0.25s;
+        }
+        .search-box-wrap input:focus {
+            outline: none; border-color: var(--accent); background: rgba(0, 0, 0, 0.6);
+        }
+
         .btn-action {
             width: 100%; padding: 0.85rem; border-radius: 14px; border: none; font-weight: 800; font-size: 0.9rem;
             cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.6rem; transition: all 0.25s;
@@ -357,7 +370,7 @@
         /* Generated Alias Cards Grid */
         .alias-grid-container {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;
-            margin-top: 0.75rem; width: 100%; flex: 1; overflow-y: auto; padding-right: 0.25rem;
+            margin-top: 0.5rem; width: 100%; flex: 1; overflow-y: auto; padding-right: 0.25rem;
         }
         .alias-card-item {
             background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 16px;
@@ -627,7 +640,7 @@
             </div>
             <h1 class="hero-title">Automate Email Testing & OTP Verification in Seconds</h1>
             <p class="hero-desc">
-                Generate thousands of unique bypass emails, stream real-time verification codes live, and persist account credentials with Encrypted Edge Cloud Storage.
+                Generate unique bypass emails on demand, stream real-time verification codes live, and persist account credentials with Encrypted Edge Cloud Storage.
             </p>
             
             <div class="hero-actions">
@@ -841,7 +854,7 @@
         <!-- Main Multi-Column Grid on Desktop / Full Screen Native Canvas on Mobile -->
         <div class="pc-dual-grid">
             
-            <!-- COLUMN 1: SETUP & CONNECTION -->
+            <!-- COLUMN 1: SETUP & ON-DEMAND EMAIL CREATION -->
             <div id="dashTabSetup" class="dash-screen-panel mobile-active">
                 <div class="panel-card">
                     <div class="section-title">
@@ -875,27 +888,43 @@
                         <i class="fa-solid fa-plug"></i> Connect & Start Monitoring
                     </button>
 
-                    <button class="btn-action btn-secondary" onclick="generateBypassEmails()">
-                        <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);"></i> Generate Emails
-                    </button>
+                    <!-- On-Demand Email Generator Control -->
+                    <div style="margin-top:1.25rem; border-top:1px dashed var(--panel-border); padding-top:1rem;">
+                        <label style="display:block; margin-bottom:0.4rem;">Create Emails On-Demand</label>
+                        <div style="display:flex; gap:0.6rem; align-items:center;">
+                            <div class="input-box" style="width:100px;">
+                                <i class="fa-solid fa-hashtag" style="left:0.8rem;"></i>
+                                <input type="number" id="emailQtyInput" value="1" min="1" max="100" style="padding-left:2.2rem; text-align:center;">
+                            </div>
+                            <button class="btn-action btn-secondary" style="margin-top:0; flex:1;" onclick="createOnDemandEmails()">
+                                <i class="fa-solid fa-plus" style="color:var(--emerald);"></i> Create Email
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- COLUMN 2: ALL EMAILS LIST -->
+            <!-- COLUMN 2: ALL EMAILS LIST WITH SEARCH BAR & INDEX NUMBERS -->
             <div id="dashTabMailes" class="dash-screen-panel">
                 <div class="panel-card">
                     <div class="section-title">
-                        <span><i class="fa-solid fa-at" style="color:var(--purple);"></i> All Emails</span>
-                        <button onclick="generateBypassEmails()" class="refresh-icon-btn" title="Refresh Emails">
-                            <i class="fa-solid fa-rotate"></i>
+                        <span><i class="fa-solid fa-at" style="color:var(--purple);"></i> All Emails (<span id="emailTotalCount">0</span>)</span>
+                        <button onclick="clearAllGeneratedEmails()" class="refresh-icon-btn" title="Clear List" style="background:rgba(244,63,94,0.15); color:var(--rose);">
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
+                    </div>
+
+                    <!-- SEARCH BAR -->
+                    <div class="search-box-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="emailSearchInput" placeholder="Search email address or number (e.g. #10)..." oninput="filterEmailList()">
                     </div>
 
                     <div id="aliasGridList" class="alias-grid-container">
                         <div style="grid-column: 1 / -1; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
                             <i class="fa-solid fa-envelope-open-text" style="font-size:2.4rem; margin-bottom:0.75rem; opacity:0.35;"></i>
-                            <h4>No Emails Generated Yet</h4>
-                            <p style="font-size:0.8rem; margin-top:0.25rem;">Enter Gmail address & click "Generate Emails".</p>
+                            <h4>No Emails Created Yet</h4>
+                            <p style="font-size:0.8rem; margin-top:0.25rem;">Click "+ Create Email" in Setup to create emails 1 by 1.</p>
                         </div>
                     </div>
                 </div>
@@ -1075,6 +1104,7 @@
         let generatedAliases = [];
         let userVaultItems = [];
         let selectedVaultEmail = "";
+        let aliasPool = [];
         window.currentDetailEmail = "";
 
         // SPLASH SCREEN DISMISSAL
@@ -1313,49 +1343,115 @@
             }
         };
 
-        // Bypass Generators
-        window.generateBypassEmails = async () => {
+        // ON-DEMAND EMAIL GENERATION (1 by 1 or User Specified Quantity)
+        window.createOnDemandEmails = async () => {
             const email = document.getElementById('inputEmail').value.trim();
             if (!email) return showToast("Enter Gmail address first!", true);
 
-            try {
-                const res = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                
-                generatedAliases = data.emails;
-                renderAliasGrid();
-                
-                if (window.innerWidth <= 768) {
-                    switchMobileTab('mailes');
+            let qtyInput = parseInt(document.getElementById('emailQtyInput').value) || 1;
+            if (qtyInput < 1) qtyInput = 1;
+
+            if (aliasPool.length === 0) {
+                try {
+                    const res = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+                    aliasPool = data.emails || [];
+                } catch(e) { 
+                    showToast("Generation failed", true); 
+                    return; 
                 }
-                showToast(`${generatedAliases.length} Emails Generated!`);
-            } catch(e) { showToast("Generation failed", true); }
+            }
+
+            let addedCount = 0;
+            for (let i = 0; i < qtyInput; i++) {
+                if (aliasPool.length > 0) {
+                    const nextEmail = aliasPool.shift();
+                    if (!generatedAliases.includes(nextEmail)) {
+                        generatedAliases.push(nextEmail);
+                        addedCount++;
+                    }
+                }
+            }
+
+            renderAliasGrid();
+            
+            if (window.innerWidth <= 768) {
+                switchMobileTab('mailes');
+            }
+            showToast(`${addedCount} Email(s) Created Successfully!`);
+        };
+
+        window.clearAllGeneratedEmails = () => {
+            generatedAliases = [];
+            renderAliasGrid();
+            showToast("Email list cleared!");
+        };
+
+        window.filterEmailList = () => {
+            renderAliasGrid();
         };
 
         function renderAliasGrid() {
             const container = document.getElementById('aliasGridList');
-            if (generatedAliases.length === 0) return;
+            const searchVal = document.getElementById('emailSearchInput')?.value.trim().toLowerCase() || '';
+            const totalCounter = document.getElementById('emailTotalCount');
+
+            if (totalCounter) totalCounter.innerText = generatedAliases.length;
+
+            if (generatedAliases.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size:2.4rem; margin-bottom:0.75rem; opacity:0.35;"></i>
+                        <h4>No Emails Created Yet</h4>
+                        <p style="font-size:0.8rem; margin-top:0.25rem;">Click "+ Create Email" in Setup to create emails 1 by 1.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Filter logic (by email address OR number index e.g. 10 or #10)
+            const filteredList = generatedAliases.map((email, idx) => ({ email, index: idx + 1 }))
+                .filter(item => {
+                    if (!searchVal) return true;
+                    const cleanSearch = searchVal.replace('#', '');
+                    const isIndexMatch = item.index.toString() === cleanSearch;
+                    const isTextMatch = item.email.toLowerCase().includes(searchVal);
+                    return isIndexMatch || isTextMatch;
+                });
+
+            if (filteredList.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size:2rem; margin-bottom:0.75rem; opacity:0.35;"></i>
+                        <h4>No Email Found</h4>
+                        <p style="font-size:0.8rem; margin-top:0.25rem;">No emails match "${searchVal}".</p>
+                    </div>
+                `;
+                return;
+            }
             
             container.innerHTML = '';
-            generatedAliases.forEach(alias => {
+            filteredList.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'alias-card-item';
-                card.onclick = () => openMailDetail(alias);
+                card.onclick = () => openMailDetail(item.email);
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.725rem; color:var(--accent); font-weight:800; background:rgba(99,102,241,0.15); padding:0.15rem 0.55rem; border-radius:99px;">EMAIL</span>
+                        <span style="font-size:0.725rem; color:var(--accent); font-weight:800; background:rgba(99,102,241,0.15); padding:0.15rem 0.55rem; border-radius:99px;">
+                            #${item.index} EMAIL
+                        </span>
                         <i class="fa-solid fa-chevron-right" style="font-size:0.75rem; color:var(--text-muted);"></i>
                     </div>
                     <div style="font-size:0.875rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:white;">
-                        ${alias}
+                        ${item.email}
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
                         <span>Tap to view OTP & Vault</span>
-                        <button class="action-icon-btn" style="width:26px; height:26px;" title="Copy Email" onclick="event.stopPropagation(); copyText('${alias}', this)">
+                        <button class="action-icon-btn" style="width:26px; height:26px;" title="Copy Email" onclick="event.stopPropagation(); copyText('${item.email}', this)">
                             <i class="fa-regular fa-copy"></i>
                         </button>
                     </div>
