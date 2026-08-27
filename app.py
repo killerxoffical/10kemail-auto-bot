@@ -134,7 +134,7 @@ def check_emails():
         
         status, messages = mail.search(None, 'ALL')
         if status == "OK" and messages[0]:
-            msg_ids = messages[0].split()[-15:] # Check last 15 emails
+            msg_ids = messages[0].split()[-8:] # Check last 8 emails for sub-second speed
             
             for msg_id in reversed(msg_ids):
                 status, msg_data = mail.fetch(msg_id, "(RFC822)")

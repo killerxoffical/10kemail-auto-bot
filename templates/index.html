@@ -1455,7 +1455,7 @@
                         showToast("Gmail Connected Successfully!");
                         sendToWorker("save_setup", { email, appPassword: pass });
                         fetchOtps(email, pass);
-                        pollTimer = setInterval(() => fetchOtps(email, pass), 5000);
+                        pollTimer = setInterval(() => fetchOtps(email, pass), 2000);
                     } else if (res.status === 401 && data.message) {
                         // Genuine Gmail IMAP credentials rejection
                         updateConnectionUI(false, "Disconnected");
@@ -1496,7 +1496,7 @@
                 if (aliasPool.length > 0) {
                     const nextEmail = aliasPool.shift();
                     if (!generatedAliases.includes(nextEmail)) {
-                        generatedAliases.push(nextEmail);
+                        generatedAliases.unshift(nextEmail); // Add to TOP
                         addedCount++;
                     }
                 }
@@ -1728,6 +1728,13 @@
             } catch(e) { console.error("OTP poll error", e); }
         }
 
+        // Delete single OTP item from history
+        window.deleteOtpItem = (idx) => {
+            cachedOtps.splice(idx, 1);
+            renderOtps();
+            showToast("OTP deleted from history");
+        };
+
         function renderOtps() {
             const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
             const now = Date.now();
@@ -1736,27 +1743,41 @@
             const container = document.getElementById('otpContainer');
             if (cachedOtps.length > 0) {
                 container.innerHTML = '';
-                cachedOtps.forEach(item => {
+                cachedOtps.forEach((item, idx) => {
                     const boxes = renderOtpDigitBoxes(item.otp);
                     container.innerHTML += `
                         <div class="otp-card-item">
                             <div style="flex:1;">
-                                <div style="font-weight:700; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                <div style="font-weight:700; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; overflow:hidden; text-overflow:ellipsis;">
                                     <i class="fa-solid fa-paper-plane" style="color:var(--accent);"></i> ${item.sender}
                                 </div>
-                                <div style="font-size:0.8rem; color:var(--text-muted);">
-                                    <i class="fa-regular fa-clock"></i> ${item.time}
+                                <div style="font-size:0.8rem; color:var(--text-muted); display:flex; align-items:center; gap:0.6rem;">
+                                    <span><i class="fa-regular fa-clock"></i> ${item.time}</span>
+                                    ${item.receiver ? `<span style="font-size:0.725rem; color:var(--purple); overflow:hidden; text-overflow:ellipsis;">to: ${item.receiver.split('@')[0]}</span>` : ''}
                                 </div>
                             </div>
                             <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem;">
                                 ${boxes}
-                                <button class="copy-btn-chip" onclick="copyText('${item.otp}', this)">
-                                    <i class="fa-regular fa-copy"></i> Copy Code
-                                </button>
+                                <div style="display:flex; gap:0.4rem; align-items:center;">
+                                    <button class="copy-btn-chip" onclick="copyText('${item.otp}', this)">
+                                        <i class="fa-regular fa-copy"></i> Copy
+                                    </button>
+                                    <button style="width:28px; height:28px; background:rgba(244,63,94,0.15); color:var(--rose); border:1px solid rgba(244,63,94,0.3); border-radius:50%; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;" onclick="deleteOtpItem(${idx})" title="Delete OTP">
+                                        <i class="fa-solid fa-trash-can" style="font-size:0.75rem;"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
                 });
+            } else {
+                container.innerHTML = `
+                    <div style="margin:auto; text-align:center; color:var(--text-muted); padding:2.5rem 1rem;">
+                        <i class="fa-solid fa-satellite-dish" style="font-size:2.5rem; margin-bottom:0.75rem; opacity:0.35;"></i>
+                        <h4>Waiting for Incoming OTPs</h4>
+                        <p style="font-size:0.8rem; margin-top:0.25rem;">New incoming OTPs will appear instantly at the top.</p>
+                    </div>
+                `;
             }
         }
     </script>
