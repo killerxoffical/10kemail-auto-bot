@@ -49,23 +49,28 @@ def clean_html(html_content):
 def extract_otp(text):
     if not text:
         return None
+        
+    clean_text = clean_html(text)
     
-    # 1. Hyphenated / Spaced OTPs (e.g. 123-456, G-123456)
-    formatted_match = re.search(r'\b(?:G-)?(\d{3}[\s-]?\d{3})\b', text)
-    if formatted_match:
-        return formatted_match.group(1).replace('-', '').replace(' ', '')
+    # 1. Direct Regex for "code: 123456", "code 123456", "is 123456", "verification code 123456", "ChatGPT code: 123456"
+    match = re.search(r'(?:code|otp|pin|is|verification|passcode|security|login|confirm|auth)?\s*[:\s-]*\b(\d{4,8})\b', clean_text, re.IGNORECASE)
+    if match and match.group(1) not in ['2024', '2025', '2026', '2027', '5000', '8080', '3000']:
+        return match.group(1)
 
-    # 2. Contextual OTP match (e.g. "code is 849201", "OTP: 849201", "pin: 1234")
-    context_match = re.search(r'(?:code|otp|pin|is|verification|passcode|security)\s*[:\s]*\b(\d{4,8})\b', text, re.IGNORECASE)
-    if context_match:
-        return context_match.group(1)
-        
+    # 2. Hyphenated / Spaced OTPs (e.g. 123-456, G-123456)
+    formatted_match = re.search(r'\b(?:G-)?(\d{3}[\s-]?\d{3})\b', clean_text)
+    if formatted_match:
+        digits = formatted_match.group(1).replace('-', '').replace(' ', '')
+        if digits not in ['2024', '2025', '2026']:
+            return digits
+
     # 3. Fallback: Any standalone 4 to 8 digit number
-    numbers = re.findall(r'\b\d{4,8}\b', text)
+    numbers = re.findall(r'\b\d{4,8}\b', clean_text)
     if numbers:
-        filtered = [n for n in numbers if n not in ['2024', '2025', '2026', '2027']]
-        return filtered[0] if filtered else numbers[0]
-        
+        filtered = [n for n in numbers if n not in ['2024', '2025', '2026', '2027', '5000', '8080']]
+        if filtered:
+            return filtered[0]
+            
     return None
 
 @app.route('/')
@@ -118,57 +123,52 @@ def check_emails():
     otps_found = []
     
     try:
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", timeout=10)
         mail.login(monitor_email, monitor_password)
         
-        # Select INBOX first, fallback to All Mail
+        # Select INBOX
         try:
             mail.select("inbox")
         except:
             mail.select('"[Gmail]/All Mail"')
         
-        status, messages = mail.search(None, 'UNSEEN')
-        msg_ids = messages[0].split() if (status == "OK" and messages[0]) else []
-        
-        if not msg_ids:
-            status_all, messages_all = mail.search(None, 'ALL')
-            if status_all == "OK" and messages_all[0]:
-                msg_ids = messages_all[0].split()[-20:] # Check last 20 emails
-        
-        for msg_id in msg_ids:
-            status, msg_data = mail.fetch(msg_id, "(RFC822)")
+        status, messages = mail.search(None, 'ALL')
+        if status == "OK" and messages[0]:
+            msg_ids = messages[0].split()[-15:] # Check last 15 emails
             
-            for response_part in msg_data:
-                if isinstance(response_part, tuple):
-                    msg = email.message_from_bytes(response_part[1])
-                    subject = decode_mime_words(msg.get("Subject", ""))
-                    sender = decode_mime_words(msg.get("From", "Unknown"))
-                    receiver = decode_mime_words(msg.get("To", ""))
-                    
-                    body_plain = ""
-                    body_html = ""
-                    if msg.is_multipart():
-                        for part in msg.walk():
-                            content_type = part.get_content_type()
-                            disp = str(part.get("Content-Disposition"))
-                            if content_type == "text/plain" and "attachment" not in disp:
-                                body_plain = part.get_payload(decode=True).decode(errors='ignore')
-                            elif content_type == "text/html" and "attachment" not in disp:
-                                body_html = part.get_payload(decode=True).decode(errors='ignore')
-                    else:
-                        body_plain = msg.get_payload(decode=True).decode(errors='ignore')
-                    
-                    body = body_plain if body_plain.strip() else clean_html(body_html)
-                    
-                    # Extract from Subject first, then Body
-                    otp = extract_otp(subject) or extract_otp(body)
-                    if otp:
-                        otps_found.append({
-                            'sender': sender,
-                            'receiver': receiver,
-                            'time': datetime.now().strftime("%I:%M:%S %p"),
-                            'otp': otp
-                        })
+            for msg_id in reversed(msg_ids):
+                status, msg_data = mail.fetch(msg_id, "(RFC822)")
+                
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject = decode_mime_words(msg.get("Subject", ""))
+                        sender = decode_mime_words(msg.get("From", "Unknown"))
+                        receiver = decode_mime_words(msg.get("To", ""))
+                        
+                        body_plain = ""
+                        body_html = ""
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                disp = str(part.get("Content-Disposition"))
+                                if content_type == "text/plain" and "attachment" not in disp:
+                                    body_plain = part.get_payload(decode=True).decode(errors='ignore')
+                                elif content_type == "text/html" and "attachment" not in disp:
+                                    body_html = part.get_payload(decode=True).decode(errors='ignore')
+                        else:
+                            body_plain = msg.get_payload(decode=True).decode(errors='ignore')
+                        
+                        full_content = (subject + " " + body_plain + " " + clean_html(body_html)).strip()
+                        
+                        otp = extract_otp(full_content)
+                        if otp:
+                            otps_found.append({
+                                'sender': sender,
+                                'receiver': receiver,
+                                'time': datetime.now().strftime("%I:%M:%S %p"),
+                                'otp': otp
+                            })
         
         mail.close()
         mail.logout()
