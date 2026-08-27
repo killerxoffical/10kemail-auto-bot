@@ -39,6 +39,12 @@
             position: relative;
         }
 
+        /* Custom Sleek Scrollbars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); }
+        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
         .no-select, img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -49,7 +55,37 @@
             -webkit-user-drag: none !important;
         }
 
-        /* 3D Animated Background Glows */
+        /* SPLASH SCREEN (FLASH SCREEN) */
+        #splashScreen {
+            position: fixed; inset: 0; z-index: 100000;
+            background: #030712; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 1.25rem;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #splashScreen.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .splash-logo {
+            width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+            border: 3px solid rgba(99, 102, 241, 0.6); box-shadow: 0 0 40px var(--accent-glow);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+        
+        .splash-loader-bar {
+            width: 160px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 99px;
+            overflow: hidden; position: relative;
+        }
+        .splash-loader-fill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--purple), var(--cyan));
+            border-radius: 99px; animation: splashProgress 1.8s forwards ease-in-out;
+        }
+
+        @keyframes splashProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* 3D Background Glows */
         .bg-glow-1 {
             position: fixed; top: -15%; left: -10%; width: 60vw; height: 60vw;
             background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(6, 182, 212, 0.18) 50%, transparent 70%);
@@ -244,88 +280,98 @@
             display: flex; flex-direction: column; align-items: center; gap: 1rem; border-top: 1px solid var(--panel-border); margin-top: 3rem;
         }
 
-        /* DASHBOARD STYLES */
-        #dashboard-view { padding: 2rem; justify-content: flex-start; height: 100vh; overflow: hidden; }
+        /* DASHBOARD STYLES & EXPANSIVE PC 3-COLUMN DASHBOARD */
+        #dashboard-view { padding: 1.25rem 2rem; justify-content: flex-start; height: 100vh; overflow: hidden; }
 
         .dash-nav {
-            width: 100%; max-width: 1400px; margin: 0 auto 1.5rem auto; display: flex;
+            width: 100%; max-width: 1600px; margin: 0 auto 1.25rem auto; display: flex;
             justify-content: space-between; align-items: center;
             background: var(--panel-bg); border: 1px solid var(--panel-border);
-            padding: 0.9rem 1.6rem; border-radius: 24px; backdrop-filter: blur(24px);
-            box-shadow: 0 20px 45px rgba(0,0,0,0.45);
+            padding: 0.85rem 1.5rem; border-radius: 24px; backdrop-filter: blur(24px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.45);
         }
 
         .user-profile-badge {
             display: flex; align-items: center; gap: 0.85rem; background: rgba(255,255,255,0.06);
-            padding: 0.45rem 1.1rem 0.45rem 0.55rem; border-radius: 99px; border: 1px solid var(--panel-border);
+            padding: 0.4rem 1.1rem 0.4rem 0.5rem; border-radius: 99px; border: 1px solid var(--panel-border);
             cursor: pointer; transition: all 0.25s; max-width: 100%;
         }
         .user-profile-badge:hover { background: rgba(255,255,255,0.14); transform: translateY(-1px); }
-        .user-profile-badge img { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); flex-shrink: 0; }
+        .user-profile-badge img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); flex-shrink: 0; object-fit: cover; }
 
-        .main-grid {
-            width: 100%; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.45fr;
-            gap: 1.5rem; flex: 1; height: calc(100vh - 135px); overflow: hidden;
+        /* EXPANSIVE 3-COLUMN DESKTOP DASHBOARD */
+        .pc-dual-grid {
+            width: 100%; max-width: 1600px; margin: 0 auto; display: grid;
+            grid-template-columns: 1fr 1.15fr 1.25fr; gap: 1.25rem; flex: 1;
+            height: calc(100vh - 120px); overflow: hidden;
+        }
+
+        .dash-screen-panel {
+            display: flex; flex-direction: column; gap: 1rem; height: 100%; overflow: hidden;
         }
 
         .panel-card {
-            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 28px;
-            padding: 2rem; backdrop-filter: blur(24px); display: flex; flex-direction: column; overflow-y: auto;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 26px;
+            padding: 1.5rem; backdrop-filter: blur(24px); display: flex; flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); flex: 1; overflow: hidden;
         }
 
-        .section-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.65rem; }
-        .section-sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+        .section-title {
+            font-size: 1.15rem; font-weight: 800; margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem; justify-content: space-between;
+        }
+
+        .refresh-icon-btn {
+            background: rgba(255,255,255,0.08); border: 1px solid var(--panel-border); color: white;
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: inline-flex;
+            justify-content: center; align-items: center; transition: all 0.25s; font-size: 0.8rem;
+        }
+        .refresh-icon-btn:hover { background: var(--purple); transform: rotate(180deg); }
 
         /* Input Controls */
-        .form-group { margin-bottom: 1.25rem; }
-        .label-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem; }
-        label { font-size: 0.875rem; font-weight: 700; color: #e2e8f0; }
+        .form-group { margin-bottom: 1.1rem; text-align: left; }
+        .label-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.5rem; }
+        label { font-size: 0.825rem; font-weight: 700; color: #e2e8f0; }
         
         .input-box { position: relative; display: flex; align-items: center; width: 100%; }
-        .input-box i { position: absolute; left: 1.1rem; color: var(--text-muted); font-size: 1rem; }
+        .input-box i { position: absolute; left: 1.1rem; color: var(--text-muted); font-size: 0.95rem; }
         .input-box input {
-            width: 100%; padding: 0.95rem 1rem 0.95rem 2.8rem; border-radius: 16px;
+            width: 100%; padding: 0.85rem 1rem 0.85rem 2.8rem; border-radius: 14px;
             background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.12);
-            color: white; font-size: 0.95rem; transition: all 0.3s;
+            color: white; font-size: 0.9rem; transition: all 0.3s;
         }
         .input-box input:focus {
             outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: rgba(0, 0, 0, 0.65);
         }
 
         .btn-action {
-            width: 100%; padding: 0.95rem; border-radius: 16px; border: none; font-weight: 800; font-size: 0.95rem;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.65rem; transition: all 0.25s;
+            width: 100%; padding: 0.85rem; border-radius: 14px; border: none; font-weight: 800; font-size: 0.9rem;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.6rem; transition: all 0.25s;
         }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; box-shadow: 0 6px 22px var(--accent-glow); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px var(--accent-glow); }
-        .btn-secondary { background: rgba(255,255,255,0.06); color: white; border: 1px solid var(--panel-border); margin-top: 0.8rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; box-shadow: 0 6px 20px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px var(--accent-glow); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: white; border: 1px solid var(--panel-border); margin-top: 0.7rem; }
         .btn-secondary:hover { background: rgba(255,255,255,0.14); transform: translateY(-2px); }
-        .btn-danger { background: var(--rose); color: white; box-shadow: 0 6px 22px rgba(244, 63, 94, 0.4); }
+        .btn-danger { background: var(--rose); color: white; box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4); }
 
-        /* Generated Alias List */
-        .alias-container {
-            margin-top: 1.25rem; background: rgba(0, 0, 0, 0.4); border-radius: 20px; border: 1px solid var(--panel-border);
-            max-height: 240px; overflow-y: auto; display: none; width: 100%;
+        /* Generated Alias Cards Grid */
+        .alias-grid-container {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;
+            margin-top: 0.75rem; width: 100%; flex: 1; overflow-y: auto; padding-right: 0.25rem;
         }
-        .alias-item {
-            padding: 0.85rem 1.15rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex;
-            justify-content: space-between; align-items: center; font-size: 0.875rem; gap: 0.6rem;
+        .alias-card-item {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 16px;
+            padding: 0.85rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.65rem;
+            cursor: pointer; transition: all 0.25s ease;
         }
-        .alias-item:last-child { border-bottom: none; }
-        .alias-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-weight: 600; }
-        .action-icon-btn {
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); color: white;
-            width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: all 0.2s; flex-shrink: 0;
+        .alias-card-item:hover {
+            background: rgba(255,255,255,0.08); transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.4);
         }
-        .action-icon-btn:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.05); }
-        .action-icon-btn.vault:hover { background: var(--purple); border-color: var(--purple); }
 
-        /* Inbox List */
+        /* Inbox Status Indicator */
         .status-pill {
-            display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700;
-            padding: 0.4rem 1.1rem; border-radius: 99px; background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border);
+            display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.785rem; font-weight: 700;
+            padding: 0.35rem 0.9rem; border-radius: 99px; background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border);
             flex-shrink: 0;
         }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
@@ -338,17 +384,39 @@
             100% { transform: scale(0.9); opacity: 0.7; }
         }
 
-        .otp-cards-wrapper { display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.25rem; }
+        .otp-cards-wrapper { display: flex; flex-direction: column; gap: 0.85rem; flex: 1; overflow-y: auto; padding-right: 0.25rem; }
         .otp-card-item {
-            background: rgba(255,255,255,0.035); border: 1px solid var(--panel-border); border-radius: 20px;
-            padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s;
+            background: rgba(255,255,255,0.035); border: 1px solid var(--panel-border); border-radius: 18px;
+            padding: 0.95rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s;
             gap: 1rem;
         }
-        .otp-card-item:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
+        .otp-card-item:hover { background: rgba(255,255,255,0.08); transform: translateX(4px); }
         .otp-code-badge {
-            font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: 4px;
-            background: rgba(99, 102, 241, 0.14); padding: 0.4rem 1.1rem; border-radius: 14px; border: 1px dashed rgba(99, 102, 241, 0.4);
+            font-size: 1.75rem; font-weight: 800; color: var(--accent); letter-spacing: 4px;
+            background: rgba(99, 102, 241, 0.14); padding: 0.35rem 0.9rem; border-radius: 14px; border: 1px dashed rgba(99, 102, 241, 0.4);
             flex-shrink: 0; text-align: center;
+        }
+
+        /* MOBILE BOTTOM NAVIGATION BAR */
+        .mobile-bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 998;
+            background: rgba(15, 23, 42, 0.95); border-top: 1px solid var(--panel-border);
+            backdrop-filter: blur(20px); padding: 0.6rem 1rem; justify-content: space-around; align-items: center;
+        }
+        .mobile-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 0.2rem; background: none;
+            border: none; color: var(--text-muted); font-size: 0.725rem; font-weight: 700; cursor: pointer;
+            transition: all 0.25s; flex: 1;
+        }
+        .mobile-nav-item i { font-size: 1.15rem; }
+        .mobile-nav-item.active { color: var(--accent); }
+
+        /* MAIL DETAIL SCREEN / MODAL */
+        .mail-detail-box {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 28px;
+            padding: 1.75rem; width: 100%; max-width: 540px; max-height: 85vh; overflow-y: auto;
+            position: relative; margin: auto; display: flex; flex-direction: column; gap: 1.25rem;
         }
 
         /* MODALS */
@@ -363,48 +431,62 @@
         .slide-modal-box {
             background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
             border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 36px;
-            padding: 2.5rem 2.25rem; width: 100%; max-width: 520px;
+            padding: 2.25rem 2rem; width: 100%; max-width: 480px;
             transform: scale(0.92) translateY(30px); transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(99, 102, 241, 0.25);
-            position: relative; text-align: center; margin: auto;
+            position: relative; text-align: center; margin: auto; max-height: 90vh; overflow-y: auto;
         }
         .modal-mask.active .slide-modal-box { transform: scale(1) translateY(0); }
 
         .slide-drag-handle {
             width: 44px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 99px;
-            margin: 0 auto 1.25rem auto; cursor: pointer; display: none;
+            margin: 0 auto 1rem auto; cursor: pointer; display: none;
         }
 
         .auth-round-logo {
-            width: 76px; height: 76px; border-radius: 50%; object-fit: cover;
-            border: 3px solid rgba(99, 102, 241, 0.6); box-shadow: 0 0 30px var(--accent-glow);
-            margin: 0 auto 1.25rem auto; display: block;
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+            border: 3px solid rgba(99, 102, 241, 0.6); box-shadow: 0 0 25px var(--accent-glow);
+            margin: 0 auto 1rem auto; display: block;
         }
 
-        .slide-feature-pills {
-            display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap; margin: 1.35rem 0 1.75rem 0;
+        /* Auth Mode Switcher Tabs */
+        .auth-tabs {
+            display: flex; background: rgba(0,0,0,0.4); padding: 0.35rem; border-radius: 99px;
+            border: 1px solid var(--panel-border); margin: 1.25rem 0; gap: 0.35rem;
         }
-        .slide-pill {
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-            padding: 0.45rem 0.95rem; border-radius: 99px; font-size: 0.785rem; font-weight: 700; color: #cbd5e1;
-            display: flex; align-items: center; gap: 0.4rem;
+        .auth-tab-btn {
+            flex: 1; padding: 0.65rem; border-radius: 99px; border: none; font-size: 0.85rem; font-weight: 700;
+            color: var(--text-muted); background: transparent; cursor: pointer; transition: all 0.25s ease;
+        }
+        .auth-tab-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--purple)); color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
 
-        /* TOAST */
+        .auth-form-tab { display: none; flex-direction: column; gap: 1rem; }
+        .auth-form-tab.active { display: flex; }
+
+        .auth-divider {
+            display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.75rem; font-weight: 700;
+            margin: 1.25rem 0; text-transform: uppercase;
+        }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
+
+        /* FLOATING TOP CENTER TOAST NOTIFICATION */
         .toast-msg {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--emerald); color: white; padding: 0.9rem 2.25rem; border-radius: 99px; font-weight: 700;
-            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.45); z-index: 9999; transition: all 0.4s ease;
-            max-width: 90vw; text-align: center; font-size: 0.95rem;
+            position: fixed; top: 25px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--emerald); color: white; padding: 0.85rem 2rem; border-radius: 99px; font-weight: 700;
+            box-shadow: 0 10px 35px rgba(16, 185, 129, 0.45); z-index: 99999; transition: all 0.4s ease;
+            max-width: 90vw; text-align: center; font-size: 0.9rem; pointer-events: none;
         }
         .toast-msg.show { transform: translateX(-50%) translateY(0); }
-        .toast-msg.error { background: var(--rose); box-shadow: 0 12px 40px rgba(244, 63, 94, 0.45); }
+        .toast-msg.error { background: var(--rose); box-shadow: 0 10px 35px rgba(244, 63, 94, 0.45); }
 
-        /* ULTRA-PREMIUM NATIVE MOBILE APP UI (<= 768px) */
+        /* NATIVE FULL-SCREEN MOBILE APP UI (<= 768px) */
         @media (max-width: 768px) {
-            body { padding: 0; background: #030712; }
-            
-            /* Mobile Nav Header */
+            body { padding-bottom: 65px; background: #030712; }
+            .mobile-bottom-nav { display: flex; }
+
             #landing-view { padding: 1.25rem 1rem; }
             .landing-nav {
                 flex-direction: row; justify-content: space-between; align-items: center;
@@ -417,22 +499,18 @@
             .nav-social-links { display: none !important; }
             .nav-getstarted-btn { font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px; }
 
-            /* Mobile Hero */
             .hero-container { gap: 1.35rem; }
             .hero-badge { font-size: 0.75rem; padding: 0.45rem 1.1rem; width: 100%; justify-content: center; }
             .hero-title { font-size: 2.25rem; line-height: 1.2; letter-spacing: -0.5px; }
             .hero-desc { font-size: 0.95rem; line-height: 1.55; padding: 0; color: #94a3b8; }
             
-            /* Mobile Hero CTA Buttons */
             .hero-actions { flex-direction: column; width: 100%; gap: 0.85rem; }
             .cta-btn { font-size: 0.95rem; padding: 1rem 1.5rem; width: 100%; justify-content: center; border-radius: 16px; }
             
-            /* Mobile 3D Mail Visual Box */
             .hero-3d-visual { max-width: 100%; height: 160px; margin: 0.5rem 0; }
             .mail-3d-card { border-radius: 20px; padding: 1.15rem; animation: none; transform: none !important; }
             .otp-3d-badge { font-size: 1.3rem; padding: 0.4rem 0.9rem; letter-spacing: 3px; border-radius: 12px; bottom: 0.85rem; right: 0.85rem; }
 
-            /* Mobile Feature Grid Cards */
             .usecase-section { margin-top: 2rem; }
             .usecase-title { font-size: 1.45rem; text-align: left; }
             .usecase-sub { font-size: 0.85rem; text-align: left; margin-bottom: 1.5rem; }
@@ -442,7 +520,6 @@
                 background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.08);
             }
             
-            /* Mobile Bottom Sheet Modal */
             .modal-mask { align-items: flex-end; padding: 0; }
             .slide-modal-box {
                 border-radius: 32px 32px 0 0;
@@ -451,25 +528,48 @@
             }
             .modal-mask.active .slide-modal-box { transform: translateY(0); }
             .slide-drag-handle { display: block; }
-            .auth-round-logo { width: 64px; height: 64px; margin-bottom: 1rem; }
+            .auth-round-logo { width: 64px; height: 64px; margin-bottom: 0.75rem; }
 
-            /* Mobile Dashboard App View */
-            #dashboard-view { padding: 0.85rem; height: auto; overflow: visible; }
+            /* NATIVE FULL-SCREEN DASHBOARD ON MOBILE */
+            #dashboard-view { padding: 0.75rem; height: auto; overflow: visible; }
             .dash-nav {
-                flex-direction: column; gap: 0.85rem; align-items: stretch; text-align: center;
-                padding: 0.85rem 1rem; border-radius: 20px; margin-bottom: 1rem;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 0.65rem 1rem !important;
+                border-radius: 99px !important;
+                margin-bottom: 0.75rem !important;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(16px);
             }
-            .dash-nav .brand-logo-container { justify-content: center; }
-            .user-profile-badge { justify-content: center; width: 100%; padding: 0.5rem 1rem; }
+            .dash-nav .brand-logo-container { font-size: 1rem; gap: 0.5rem; }
+            .dash-nav .brand-logo-img { width: 34px; height: 34px; }
+            .user-profile-badge {
+                padding: 0.3rem 0.75rem !important;
+                border-radius: 99px !important;
+                gap: 0.45rem !important;
+                width: auto !important;
+            }
+            .user-profile-badge img { width: 30px !important; height: 30px !important; }
+            #userName { font-size: 0.785rem !important; }
+            #userEmail { font-size: 0.65rem !important; display: none; }
             
-            .main-grid { grid-template-columns: 1fr; height: auto; overflow: visible; gap: 1rem; }
-            .panel-card { padding: 1.25rem; border-radius: 22px; box-shadow: none; }
+            .pc-dual-grid { display: flex; flex-direction: column; height: auto; overflow: visible; gap: 0.75rem; }
+            .dash-screen-panel { display: none !important; height: auto; }
+            .dash-screen-panel.mobile-active { display: flex !important; }
+
+            /* REMOVE INNER BOXED PANEL ON MOBILE -> FULL NATIVE APP CANVAS */
+            .panel-card {
+                padding: 0.75rem 0.25rem; border-radius: 0; background: transparent;
+                border: none; box-shadow: none; overflow: visible;
+            }
             
-            .section-title { font-size: 1.15rem; }
-            .section-sub { font-size: 0.8rem; margin-bottom: 1rem; }
+            .section-title { font-size: 1.15rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 0.5rem; }
             
-            .otp-card-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; }
-            .otp-code-badge { font-size: 1.75rem; width: 100%; text-align: center; padding: 0.5rem; }
+            .otp-card-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0.95rem; border-radius: 16px; }
+            .otp-code-badge { font-size: 1.6rem; width: 100%; text-align: center; padding: 0.4rem; }
+
+            .alias-grid-container { grid-template-columns: 1fr; max-height: none; overflow: visible; }
         }
 
         @media (max-width: 480px) {
@@ -481,6 +581,14 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <!-- FLASH / SPLASH SCREEN -->
+    <div id="splashScreen">
+        <img src="/logo.png" alt="10k Maile" class="splash-logo" onerror="this.src='https://pub-4c6b2dbf3a0c4862a8964b1546de6283.r2.dev/1787822978735_photo_6089281921218188679_c.webp'">
+        <div style="font-weight:800; font-size:1.65rem; color:white; letter-spacing:-0.5px;">10k Maile</div>
+        <div class="splash-loader-bar"><div class="splash-loader-fill"></div></div>
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Developer by VAREON STUDIO</div>
+    </div>
 
     <div class="bg-glow-1"></div>
     <div class="bg-glow-2"></div>
@@ -519,7 +627,7 @@
             </div>
             <h1 class="hero-title">Automate Email Testing & OTP Verification in Seconds</h1>
             <p class="hero-desc">
-                Generate thousands of unique dot aliases, stream real-time verification codes live, and persist account credentials with Encrypted Edge Cloud Storage.
+                Generate thousands of unique bypass emails, stream real-time verification codes live, and persist account credentials with Encrypted Edge Cloud Storage.
             </p>
             
             <div class="hero-actions">
@@ -554,14 +662,14 @@
             <!-- Supported Use Cases & Key Benefits Section -->
             <div class="usecase-section">
                 <h3 class="usecase-title"><i class="fa-solid fa-layer-group" style="color:var(--accent)"></i> What You Can Test & Do With 10k Maile</h3>
-                <p class="usecase-sub">Powerful alias & OTP automation built for developers, QA testers & AI enthusiasts</p>
+                <p class="usecase-sub">Powerful email & OTP automation built for developers, QA testers & AI enthusiasts</p>
                 
                 <div class="demo-3d-cards">
                     <div class="card-3d">
                         <div>
                             <i class="fa-solid fa-brain" style="color:var(--accent); font-size:1.8rem; margin-bottom:0.75rem;"></i>
                             <h4 style="margin-bottom:0.35rem;">AI Tools & Free Trial Testing</h4>
-                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Test ChatGPT, Midjourney, Claude, and AI platform free trials with unique dot aliases without needing multiple SIMs.</p>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Test ChatGPT, Midjourney, Claude, and AI platform free trials with unique bypass emails without needing multiple SIMs.</p>
                         </div>
                     </div>
 
@@ -585,7 +693,7 @@
                         <div>
                             <i class="fa-solid fa-vault" style="color:var(--cyan); font-size:1.8rem; margin-bottom:0.75rem;"></i>
                             <h4 style="margin-bottom:0.35rem;">Encrypted Password Vault</h4>
-                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Save website names, URLs, and account passwords attached to each generated alias securely on SQL Edge.</p>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Save website names, URLs, and account passwords attached to each generated email securely on SQL Edge.</p>
                         </div>
                     </div>
 
@@ -601,7 +709,7 @@
                         <div>
                             <i class="fa-solid fa-shield-virus" style="color:var(--amber); font-size:1.8rem; margin-bottom:0.75rem;"></i>
                             <h4 style="margin-bottom:0.35rem;">Zero Inbox Spam Pollution</h4>
-                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Keep your personal primary inbox clean while creating disposable testing aliases effortlessly.</p>
+                            <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Keep your personal primary inbox clean while creating disposable testing emails effortlessly.</p>
                         </div>
                     </div>
                 </div>
@@ -633,29 +741,83 @@
                 <div class="logo-fallback-3d auth-round-logo" style="display:none;"><i class="fa-solid fa-bolt"></i></div>
             </div>
 
-            <h3 style="font-size:1.65rem; font-weight:800; margin-bottom:0.4rem;">Unlock 10k Maile Ecosystem</h3>
-            <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.5;">Authenticate with Google to activate real-time OTP stream & encrypted cloud sync.</p>
+            <h3 style="font-size:1.55rem; font-weight:800; margin-bottom:0.2rem;">Welcome to 10k Maile</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Sign in or create an account to start monitoring OTPs.</p>
 
-            <div class="slide-feature-pills">
-                <div class="slide-pill"><i class="fa-solid fa-bolt" style="color:var(--accent)"></i> Live OTP Stream</div>
-                <div class="slide-pill"><i class="fa-solid fa-vault" style="color:var(--purple)"></i> SQL Vault Sync</div>
-                <div class="slide-pill"><i class="fa-solid fa-shield-check" style="color:var(--emerald)"></i> Zero Spam</div>
+            <!-- Mode Switcher Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab-btn" onclick="switchAuthTab('register')">Create Account</button>
             </div>
+
+            <!-- TAB 1: LOGIN FORM -->
+            <div id="authTabLogin" class="auth-form-tab active">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="loginEmail" placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="label-flex">
+                        <label>Password</label>
+                        <span style="color:var(--accent); cursor:pointer; font-size:0.785rem; font-weight:700;" onclick="forgotPassword()"><i class="fa-solid fa-key"></i> Forgot Password?</span>
+                    </div>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="loginPass" placeholder="••••••••">
+                    </div>
+                </div>
+                <button class="btn-action btn-primary" onclick="loginWithEmailPass()">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                </button>
+            </div>
+
+            <!-- TAB 2: REGISTER FORM -->
+            <div id="authTabRegister" class="auth-form-tab">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" id="regName" placeholder="Your Name (e.g. John Doe)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="regEmail" placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="regPass" placeholder="•••••••• (Min 6 chars)">
+                    </div>
+                </div>
+                <button class="btn-action btn-primary" onclick="registerWithEmailPass()">
+                    <i class="fa-solid fa-user-plus"></i> Create Free Account
+                </button>
+            </div>
+
+            <div class="auth-divider">Or continue with</div>
             
-            <button class="btn-action" style="background:white; color:#111; font-size:1rem; padding:1.05rem; border-radius:99px; box-shadow: 0 8px 25px rgba(255,255,255,0.3);" onclick="loginWithGoogle()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="22" alt="G" style="pointer-events:none;">
+            <button class="btn-action" style="background:white; color:#111; font-size:0.95rem; padding:0.9rem; border-radius:99px; box-shadow: 0 8px 25px rgba(255,255,255,0.25);" onclick="loginWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G" style="pointer-events:none;">
                 Sign In with Google
             </button>
             
-            <div style="margin-top:1.5rem; font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+            <div style="margin-top:1.25rem; font-size:0.75rem; color:var(--text-muted); font-weight:600;">
                 Engineered by <a href="https://vareonstudio.netlify.app/" target="_blank" style="color:var(--accent); text-decoration:none;">VAREON STUDIO</a>
             </div>
         </div>
     </div>
 
-    <!-- VIEW 3: DASHBOARD PAGE -->
+    <!-- VIEW 3: DASHBOARD PAGE (EXPANSIVE 3-COLUMN DESKTOP & FULLSCREEN MOBILE NATIVE APP) -->
     <section id="dashboard-view" class="view-section">
-        <!-- Top Nav -->
+        <!-- Top Nav Header -->
         <nav class="dash-nav">
             <div class="brand-logo-container no-select">
                 <img src="/logo.png" alt="10k Maile Logo" class="brand-logo-img" oncontextmenu="return false;" draggable="false" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -667,7 +829,7 @@
             </div>
 
             <div class="user-profile-badge" onclick="logout()" title="Click to Logout">
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="U" oncontextmenu="return false;" draggable="false">
+                <img id="userAvatar" src="https://pub-4c6b2dbf3a0c4862a8964b1546de6283.r2.dev/1787822978735_photo_6089281921218188679_c.webp" alt="U" oncontextmenu="return false;" draggable="false">
                 <div>
                     <div id="userName" style="font-weight:800; font-size:0.85rem;">User Account</div>
                     <div id="userEmail" style="font-size:0.7rem; color:var(--text-muted);">Sync Active</div>
@@ -676,66 +838,140 @@
             </div>
         </nav>
 
-        <!-- Grid Workspace -->
-        <div class="main-grid">
-            <!-- Panel 1: Setup & Generator -->
-            <div class="panel-card">
-                <div class="section-title"><i class="fa-solid fa-sliders" style="color:var(--accent);"></i> Setup & Configuration</div>
-                <div class="section-sub">Configure Gmail IMAP connection to enable live OTP reception.</div>
-
-                <div class="form-group">
-                    <label>Gmail Address</label>
-                    <div class="input-box">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input type="email" id="inputEmail" placeholder="example@gmail.com">
+        <!-- Main Multi-Column Grid on Desktop / Full Screen Native Canvas on Mobile -->
+        <div class="pc-dual-grid">
+            
+            <!-- COLUMN 1: SETUP & CONNECTION -->
+            <div id="dashTabSetup" class="dash-screen-panel mobile-active">
+                <div class="panel-card">
+                    <div class="section-title">
+                        <span><i class="fa-solid fa-sliders" style="color:var(--accent);"></i> Setup & Connection</span>
+                        <div id="statusIndicator" class="status-pill">
+                            <div class="pulse-dot"></div>
+                            <span id="statusText">Disconnected</span>
+                        </div>
                     </div>
+
+                    <div class="form-group">
+                        <label>Gmail Address</label>
+                        <div class="input-box">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" id="inputEmail" placeholder="example@gmail.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-flex">
+                            <label>App Password (16-Digit)</label>
+                            <span style="color:var(--accent); cursor:pointer; font-size:0.785rem; font-weight:700;" onclick="openModal('infoModal')"><i class="fa-solid fa-circle-question"></i> How to get?</span>
+                        </div>
+                        <div class="input-box">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" id="inputAppPass" placeholder="abcd efgh ijkl mnop">
+                        </div>
+                    </div>
+
+                    <button id="btnConnect" class="btn-action btn-primary" onclick="toggleConnect()">
+                        <i class="fa-solid fa-plug"></i> Connect & Start Monitoring
+                    </button>
+
+                    <button class="btn-action btn-secondary" onclick="generateBypassEmails()">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);"></i> Generate Emails
+                    </button>
                 </div>
-
-                <div class="form-group">
-                    <div class="label-flex">
-                        <label>App Password (16-Digit)</label>
-                        <span style="color:var(--accent); cursor:pointer; font-size:0.8rem; font-weight:700;" onclick="openModal('infoModal')"><i class="fa-solid fa-circle-question"></i> How to get?</span>
-                    </div>
-                    <div class="input-box">
-                        <i class="fa-solid fa-key"></i>
-                        <input type="password" id="inputAppPass" placeholder="abcd efgh ijkl mnop">
-                    </div>
-                </div>
-
-                <button id="btnConnect" class="btn-action btn-primary" onclick="toggleConnect()">
-                    <i class="fa-solid fa-plug"></i> Connect & Start Monitoring
-                </button>
-
-                <button class="btn-action btn-secondary" onclick="generateBypassEmails()">
-                    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);"></i> Generate Bypass Emails
-                </button>
-
-                <div id="aliasList" class="alias-container"></div>
             </div>
 
-            <!-- Panel 2: Live Inbox -->
-            <div class="panel-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-                    <div>
-                        <div class="section-title"><i class="fa-solid fa-inbox" style="color:var(--emerald);"></i> Realtime Inbox</div>
-                        <div class="section-sub" style="margin-bottom:0;">Automated OTP extraction pipeline</div>
+            <!-- COLUMN 2: ALL EMAILS LIST -->
+            <div id="dashTabMailes" class="dash-screen-panel">
+                <div class="panel-card">
+                    <div class="section-title">
+                        <span><i class="fa-solid fa-at" style="color:var(--purple);"></i> All Emails</span>
+                        <button onclick="generateBypassEmails()" class="refresh-icon-btn" title="Refresh Emails">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
                     </div>
-                    <div id="statusIndicator" class="status-pill">
-                        <div class="pulse-dot"></div>
-                        <span id="statusText">Disconnected</span>
+
+                    <div id="aliasGridList" class="alias-grid-container">
+                        <div style="grid-column: 1 / -1; text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+                            <i class="fa-solid fa-envelope-open-text" style="font-size:2.4rem; margin-bottom:0.75rem; opacity:0.35;"></i>
+                            <h4>No Emails Generated Yet</h4>
+                            <p style="font-size:0.8rem; margin-top:0.25rem;">Enter Gmail address & click "Generate Emails".</p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div id="otpContainer" class="otp-cards-wrapper">
-                    <div style="margin:auto; text-align:center; color:var(--text-muted); padding:3rem 1rem;">
-                        <i class="fa-solid fa-satellite-dish" style="font-size:2.8rem; margin-bottom:1rem; opacity:0.35;"></i>
-                        <h4>Waiting for Connection</h4>
-                        <p style="font-size:0.85rem; margin-top:0.35rem;">Connect your account to listen for incoming OTPs live.</p>
+            <!-- COLUMN 3: REALTIME OTP STREAM & HISTORY -->
+            <div id="dashTabHistory" class="dash-screen-panel">
+                <div class="panel-card">
+                    <div class="section-title">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--emerald);"></i> Realtime OTP History</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(Auto 7-day prune)</span>
                     </div>
+
+                    <div id="otpContainer" class="otp-cards-wrapper">
+                        <div style="margin:auto; text-align:center; color:var(--text-muted); padding:2.5rem 1rem;">
+                            <i class="fa-solid fa-satellite-dish" style="font-size:2.5rem; margin-bottom:0.75rem; opacity:0.35;"></i>
+                            <h4>Waiting for Connection</h4>
+                            <p style="font-size:0.8rem; margin-top:0.25rem;">Connect your account in Setup screen to capture OTPs live.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- MOBILE BOTTOM NAVIGATION (3 SCREENS) -->
+    <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-item active" onclick="switchMobileTab('setup')">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Setup</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchMobileTab('mailes')">
+            <i class="fa-solid fa-at"></i>
+            <span>All Emails</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchMobileTab('history')">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>History</span>
+        </button>
+    </nav>
+
+    <!-- MODAL: DEDICATED MAIL DETAIL VIEW (FOR EACH EMAIL) -->
+    <div class="modal-mask" id="mailDetailModal" onclick="if(event.target===this) closeModal('mailDetailModal')">
+        <div class="mail-detail-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-border); padding-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; overflow:hidden;">
+                    <i class="fa-solid fa-at" style="color:var(--purple); font-size:1.2rem;"></i>
+                    <h4 id="detailTargetEmail" style="font-size:1rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h4>
+                </div>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.25rem;" onclick="closeModal('mailDetailModal')"></i>
+            </div>
+
+            <!-- UPPER DISPLAY: INCOMING / LATEST OTP FOR THIS MAIL -->
+            <div style="background:rgba(0,0,0,0.4); border:1px solid var(--panel-border); border-radius:20px; padding:1.25rem; text-align:center;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.4rem;">
+                    <i class="fa-solid fa-bolt" style="color:var(--emerald);"></i> Latest Live OTP
+                </div>
+                <div id="detailOtpBadge" class="otp-code-badge" style="display:inline-block; font-size:2.2rem; margin:0.4rem 0;">------</div>
+                <div id="detailOtpMeta" style="font-size:0.75rem; color:var(--text-muted);">No OTP received for this email yet</div>
+            </div>
+
+            <!-- LOWER DISPLAY: SAVED VAULT ACCOUNTS FOR THIS MAIL -->
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <h5 style="font-size:0.95rem; font-weight:800;"><i class="fa-solid fa-vault" style="color:var(--cyan);"></i> Saved Vault Credentials</h5>
+                    <button class="action-icon-btn vault" style="width:30px; height:30px;" title="Add Account" onclick="openVaultModal(currentDetailEmail)">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <div id="detailVaultList" style="display:flex; flex-direction:column; gap:0.6rem; max-height:180px; overflow-y:auto;">
+                    <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:1rem;">No saved credentials for this email.</div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- MODAL: INFO / APP PASS STEPS -->
     <div class="modal-mask" id="infoModal" onclick="if(event.target===this) closeModal('infoModal')">
@@ -773,7 +1009,7 @@
                 <h4 style="font-size:1.2rem; font-weight:800; color:var(--purple);"><i class="fa-solid fa-vault"></i> Save to Encrypted Vault</h4>
                 <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-muted); font-size:1.2rem;" onclick="closeModal('vaultModal')"></i>
             </div>
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Alias: <span id="vaultTargetEmail" style="color:white; font-weight:700;"></span></div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Email: <span id="vaultTargetEmail" style="color:white; font-weight:700;"></span></div>
 
             <div class="form-group">
                 <label>Website / Service Name</label>
@@ -808,7 +1044,13 @@
     <!-- Firebase Script Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getAuth, signInWithPopup, GoogleAuthProvider, 
+            createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail,
+            onAuthStateChanged, signOut 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const DEFAULT_AVATAR = "https://pub-4c6b2dbf3a0c4862a8964b1546de6283.r2.dev/1787822978735_photo_6089281921218188679_c.webp";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBcX6HQ3Mg9BhgD_J5V5-y4hxkmSfSwPHY",
@@ -830,7 +1072,51 @@
         let isConnected = false;
         let pollTimer = null;
         let cachedOtps = [];
+        let generatedAliases = [];
+        let userVaultItems = [];
         let selectedVaultEmail = "";
+        window.currentDetailEmail = "";
+
+        // SPLASH SCREEN DISMISSAL
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) splash.classList.add('fade-out');
+            }, 1800);
+        });
+
+        // Mobile Screen Switcher Handler
+        window.switchMobileTab = (tabName) => {
+            const tabs = ['setup', 'mailes', 'history'];
+            
+            tabs.forEach(t => {
+                const panel = document.getElementById(`dashTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (panel) panel.classList.remove('mobile-active');
+            });
+
+            document.querySelectorAll('.mobile-nav-item').forEach((btn, idx) => {
+                btn.classList.toggle('active', tabs[idx] === tabName);
+            });
+
+            const activePanel = document.getElementById(`dashTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+            if (activePanel) activePanel.classList.add('mobile-active');
+        };
+
+        // Auth Tabs Switcher
+        window.switchAuthTab = (mode) => {
+            const loginBtn = document.querySelectorAll('.auth-tab-btn')[0];
+            const regBtn = document.querySelectorAll('.auth-tab-btn')[1];
+            const loginForm = document.getElementById('authTabLogin');
+            const regForm = document.getElementById('authTabRegister');
+
+            if (mode === 'login') {
+                loginBtn.classList.add('active'); regBtn.classList.remove('active');
+                loginForm.classList.add('active'); regForm.classList.remove('active');
+            } else {
+                regBtn.classList.add('active'); loginBtn.classList.remove('active');
+                regForm.classList.add('active'); loginForm.classList.remove('active');
+            }
+        };
 
         // UI Handlers
         window.startGetStarted = () => {
@@ -841,6 +1127,60 @@
             }
         };
 
+        // Forgot Password
+        window.forgotPassword = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) return showToast("Enter your email address in the email field first!", true);
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showToast("Password reset link sent to your email!");
+            } catch(e) {
+                showToast("Error: " + e.message, true);
+            }
+        };
+
+        // Email / Pass Sign In
+        window.loginWithEmailPass = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if (!email || !pass) return showToast("Enter email & password", true);
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                closeModal('authModalMask');
+                showToast("Signed In Successfully!");
+            } catch (e) {
+                showToast("Login Failed: " + e.message, true);
+            }
+        };
+
+        // Email / Pass Register
+        window.registerWithEmailPass = async () => {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+
+            if (!name || !email || !pass) return showToast("All fields are required", true);
+            if (pass.length < 6) return showToast("Password must be at least 6 characters", true);
+
+            try {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await updateProfile(res.user, {
+                    displayName: name,
+                    photoURL: DEFAULT_AVATAR
+                });
+                
+                document.getElementById('userName').innerText = name;
+                closeModal('authModalMask');
+                showToast("Account Created Successfully!");
+            } catch (e) {
+                showToast("Registration Failed: " + e.message, true);
+            }
+        };
+
+        // Google Login
         window.loginWithGoogle = () => {
             signInWithPopup(auth, provider)
                 .then(() => closeModal('authModalMask'))
@@ -860,9 +1200,15 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
-                document.getElementById('userName').innerText = user.displayName || "User";
+                
+                let displayName = user.displayName;
+                if (!displayName && user.email) {
+                    displayName = user.email.split('@')[0];
+                }
+                
+                document.getElementById('userName').innerText = displayName || "User Account";
                 document.getElementById('userEmail').innerText = user.email;
-                if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
+                document.getElementById('userAvatar').src = user.photoURL || DEFAULT_AVATAR;
                 
                 closeModal('authModalMask');
                 switchView('dashboard-view');
@@ -918,7 +1264,7 @@
             const pass = document.getElementById('inputAppPass').value.trim();
 
             if (!isConnected) {
-                if (!email || !pass) return showToast("Please enter email & App password", true);
+                if (!email || !pass) return showToast("Enter Gmail address & App password first!", true);
                 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
                 
@@ -980,28 +1326,86 @@
                 });
                 const data = await res.json();
                 
-                const container = document.getElementById('aliasList');
-                container.innerHTML = '';
+                generatedAliases = data.emails;
+                renderAliasGrid();
                 
-                data.emails.forEach(alias => {
-                    const item = document.createElement('div');
-                    item.className = 'alias-item';
-                    item.innerHTML = `
-                        <span class="alias-text">${alias}</span>
-                        <div style="display:flex; gap:0.4rem; flex-shrink:0;">
-                            <button class="action-icon-btn vault" title="Save to Vault" onclick="openVaultModal('${alias}')">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                            <button class="action-icon-btn" title="Copy Email" onclick="copyText('${alias}', this)">
+                if (window.innerWidth <= 768) {
+                    switchMobileTab('mailes');
+                }
+                showToast(`${generatedAliases.length} Emails Generated!`);
+            } catch(e) { showToast("Generation failed", true); }
+        };
+
+        function renderAliasGrid() {
+            const container = document.getElementById('aliasGridList');
+            if (generatedAliases.length === 0) return;
+            
+            container.innerHTML = '';
+            generatedAliases.forEach(alias => {
+                const card = document.createElement('div');
+                card.className = 'alias-card-item';
+                card.onclick = () => openMailDetail(alias);
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.725rem; color:var(--accent); font-weight:800; background:rgba(99,102,241,0.15); padding:0.15rem 0.55rem; border-radius:99px;">EMAIL</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size:0.75rem; color:var(--text-muted);"></i>
+                    </div>
+                    <div style="font-size:0.875rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:white;">
+                        ${alias}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
+                        <span>Tap to view OTP & Vault</span>
+                        <button class="action-icon-btn" style="width:26px; height:26px;" title="Copy Email" onclick="event.stopPropagation(); copyText('${alias}', this)">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Open Individual Mail Detail Window
+        window.openMailDetail = (alias) => {
+            currentDetailEmail = alias;
+            document.getElementById('detailTargetEmail').innerText = alias;
+
+            const matchingOtp = cachedOtps.find(o => o.receiver === alias || o.sender.includes(alias));
+            const badge = document.getElementById('detailOtpBadge');
+            const meta = document.getElementById('detailOtpMeta');
+
+            if (matchingOtp) {
+                badge.innerText = matchingOtp.otp;
+                meta.innerHTML = `<i class="fa-regular fa-clock"></i> Received: ${matchingOtp.time} from ${matchingOtp.sender}`;
+            } else if (cachedOtps.length > 0) {
+                badge.innerText = cachedOtps[0].otp;
+                meta.innerHTML = `<i class="fa-regular fa-clock"></i> Latest Stream OTP from ${cachedOtps[0].sender}`;
+            } else {
+                badge.innerText = "------";
+                meta.innerText = "No OTP received for this email yet";
+            }
+
+            const vaultContainer = document.getElementById('detailVaultList');
+            const matches = userVaultItems.filter(v => v.email === alias);
+            if (matches.length > 0) {
+                vaultContainer.innerHTML = '';
+                matches.forEach(m => {
+                    vaultContainer.innerHTML += `
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--panel-border); padding:0.75rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div style="font-weight:700; font-size:0.85rem;">${m.website}</div>
+                                <div style="font-size:0.725rem; color:var(--text-muted);">${m.url || 'No URL'}</div>
+                            </div>
+                            <button class="action-icon-btn" style="width:30px; height:30px;" onclick="copyText('${m.password}', this)" title="Copy Password">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
                     `;
-                    container.appendChild(item);
                 });
-                container.style.display = 'block';
-                showToast(`${data.emails.length} Dot Aliases Generated!`);
-            } catch(e) { showToast("Generation failed", true); }
+            } else {
+                vaultContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:1rem;">No saved credentials for this email.</div>`;
+            }
+
+            openModal('mailDetailModal');
         };
 
         window.copyText = (text, btn) => {
@@ -1026,15 +1430,16 @@
 
             if (!site || !pass) return showToast("Site name & password required!", true);
 
-            const res = await sendToWorker("save_vault", {
-                email: selectedVaultEmail, website: site, url, password: pass, date: new Date().toISOString()
-            });
+            const newItem = { email: selectedVaultEmail, website: site, url, password: pass, date: new Date().toISOString() };
+            userVaultItems.unshift(newItem);
+
+            await sendToWorker("save_vault", newItem);
 
             closeModal('vaultModal');
             showToast("Saved to Encrypted Cloud Vault!");
         };
 
-        // OTP Fetcher
+        // OTP Fetcher & 7-Day Auto Prune Cleanup
         async function fetchOtps(email, password) {
             try {
                 const res = await fetch('/api/check_emails', {
@@ -1048,7 +1453,7 @@
                     let fresh = false;
                     data.otps.forEach(o => {
                         if (!cachedOtps.some(c => c.otp === o.otp && c.time === o.time)) {
-                            cachedOtps.unshift(o);
+                            cachedOtps.unshift({ ...o, timestamp: Date.now() });
                             fresh = true;
                             sendToWorker("save_otp_history", o);
                         }
@@ -1059,6 +1464,10 @@
         }
 
         function renderOtps() {
+            const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            cachedOtps = cachedOtps.filter(item => !item.timestamp || (now - item.timestamp < SEVEN_DAYS_MS));
+
             const container = document.getElementById('otpContainer');
             if (cachedOtps.length > 0) {
                 container.innerHTML = '';
