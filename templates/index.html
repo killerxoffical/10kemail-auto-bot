@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OTP Manager & Bypass Email Generator</title>
+    <title>10k Maile - OTP & Vault Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -22,177 +22,104 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden; /* Prevent body scroll, let panels scroll */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            background-attachment: fixed; color: var(--text-main);
+            height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; padding: 1rem;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            max-height: 900px;
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 1.5rem;
-        }
+        /* Views */
+        #login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        #dashboard-view { display: none; width: 100%; max-width: 1200px; height: 100%; max-height: 900px; }
 
-        /* Responsive Layout */
+        /* Login Screen */
+        .login-card {
+            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border); border-radius: 24px; padding: 3rem; text-align: center;
+            max-width: 400px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .login-card i { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
+        .login-card h2 { justify-content: center; margin-bottom: 1rem; }
+
+        .btn-google {
+            background: white; color: #333; padding: 0.85rem 1.5rem; border-radius: 99px;
+            border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 0.5rem; width: 100%; font-size: 1rem; margin-top: 2rem; transition: all 0.2s;
+        }
+        .btn-google:hover { box-shadow: 0 4px 14px rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .btn-google img { width: 20px; }
+
+        /* Main Dashboard */
+        .container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; height: 100%; }
+        
         @media (max-width: 900px) {
             body { padding: 0; }
-            .container {
-                grid-template-columns: 1fr;
-                height: 100vh;
-                max-height: none;
-                gap: 0;
-                overflow-y: auto;
-            }
-            .panel {
-                border-radius: 0 !important;
-                border: none !important;
-                border-bottom: 1px solid var(--panel-border) !important;
-                min-height: auto;
-            }
+            .container { grid-template-columns: 1fr; height: 100vh; max-height: none; gap: 0; overflow-y: auto; }
+            .panel { border-radius: 0 !important; border: none !important; border-bottom: 1px solid var(--panel-border) !important; min-height: auto; }
         }
 
-        /* Glassmorphism Panels */
         .panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--panel-border);
-            border-radius: 24px;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
+            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border); border-radius: 24px; padding: 2rem;
+            display: flex; flex-direction: column; overflow-y: auto; position: relative;
         }
 
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; }
 
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-            line-height: 1.5;
+        /* User Profile Badge */
+        .profile-badge {
+            position: absolute; top: 1.5rem; right: 1.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem;
+            border-radius: 99px; font-size: 0.8rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
         }
+        .profile-badge:hover { background: rgba(255,255,255,0.1); }
+        .profile-badge img { width: 24px; height: 24px; border-radius: 50%; }
 
         /* Form Controls */
-        .form-group { margin-bottom: 1.5rem; position: relative; }
-        
-        .label-wrap {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #cbd5e1;
-        }
-
-        .info-icon {
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
+        .form-group { margin-bottom: 1.5rem; }
+        .label-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        label { font-size: 0.85rem; font-weight: 500; color: #cbd5e1; }
+        .info-icon { color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
         .info-icon:hover { color: var(--primary); }
 
         .input-wrapper { position: relative; }
-        .input-wrapper i {
-            position: absolute; left: 1rem; top: 50%;
-            transform: translateY(-50%); color: var(--text-muted);
-        }
-
+        .input-wrapper i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         input {
-            width: 100%;
-            padding: 0.85rem 1rem 0.85rem 2.5rem;
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; font-family: inherit; font-size: 1rem; transition: all 0.3s;
         }
-
-        input:focus {
-            outline: none; border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            background: rgba(0, 0, 0, 0.5);
-        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); background: rgba(0, 0, 0, 0.5); }
 
         /* Buttons */
         .btn-group { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-        
         button {
-            width: 100%; padding: 1rem;
-            border-radius: 12px; border: none;
-            font-family: inherit; font-weight: 600; font-size: 0.95rem;
-            cursor: pointer; transition: all 0.2s ease;
-            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%; padding: 1rem; border-radius: 12px; border: none; font-family: inherit; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
-
-        button.primary {
-            background: var(--primary); color: white;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-        }
+        button.primary { background: var(--primary); color: white; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39); }
         button.primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
-
-        button.secondary {
-            background: rgba(255, 255, 255, 0.05); color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        button.secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); }
         button.secondary:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-
-        button.danger {
-            background: var(--danger); color: white;
-            box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39);
-        }
+        button.danger { background: var(--danger); color: white; box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39); }
 
         /* Dashboard Header */
         .dashboard-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);
         }
-
         .status-indicator {
-            display: flex; align-items: center; gap: 0.5rem;
-            font-size: 0.85rem; font-weight: 500; padding: 0.4rem 1rem;
-            border-radius: 99px; background: rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500;
+            padding: 0.4rem 1rem; border-radius: 99px; background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s;
         }
-
         .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
-
-        .status-indicator.active {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.3);
-            color: var(--success);
-        }
-        .status-indicator.active .status-dot {
-            background: var(--success); box-shadow: 0 0 8px var(--success);
-            animation: pulse 2s infinite;
-        }
+        .status-indicator.active { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+        .status-indicator.active .status-dot { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
 
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
@@ -201,34 +128,18 @@
         }
 
         /* OTP Cards */
-        .otp-list {
-            display: flex; flex-direction: column; gap: 1rem;
-            overflow-y: auto; flex: 1; padding-right: 0.5rem;
-        }
-
+        .otp-list { display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex: 1; padding-right: 0.5rem; }
         .otp-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px; padding: 1.5rem; display: flex; justify-content: space-between;
-            align-items: center; transition: all 0.3s ease;
-            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            align-items: center; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        @media (max-width: 600px) {
-            .otp-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
-            .otp-code { width: 100%; text-align: center; }
-        }
-
-        .otp-card:hover { background: rgba(255, 255, 255, 0.06); transform: translateX(4px); }
-
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
+        @media (max-width: 600px) { .otp-card { flex-direction: column; align-items: flex-start; gap: 1rem; } .otp-code { width: 100%; text-align: center; } }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
         .otp-meta { display: flex; flex-direction: column; gap: 0.4rem; }
         .sender { font-size: 1.1rem; font-weight: 600; color: white; display: flex; align-items: center; gap: 0.5rem; }
         .time { font-size: 0.85rem; color: var(--text-muted); }
-        
         .otp-code {
             font-size: 2.2rem; font-weight: 700; color: var(--primary); letter-spacing: 4px;
             background: rgba(59, 130, 246, 0.1); padding: 0.5rem 1rem;
@@ -245,16 +156,23 @@
         .generated-emails {
             margin-top: 1.5rem; background: rgba(0, 0, 0, 0.2);
             border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);
-            max-height: 200px; overflow-y: auto; display: none;
+            max-height: 250px; overflow-y: auto; display: none;
         }
-        .generated-emails .email-item {
+        .email-item {
             padding: 0.75rem 1rem; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
         }
-        .copy-btn { background: none; border: none; padding: 0.5rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
-        .copy-btn:hover { color: var(--primary); }
+        .email-text { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+        .action-btns { display: flex; gap: 0.5rem; }
+        .icon-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; width: 32px; height: 32px; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s;
+        }
+        .icon-btn:hover { background: var(--primary); border-color: var(--primary); }
+        .icon-btn.vault-btn:hover { background: #8b5cf6; border-color: #8b5cf6; } /* Purple for vault */
 
-        /* Modal Overlay */
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
@@ -262,107 +180,117 @@
             z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-
         .modal-content {
             background: var(--bg-color); border: 1px solid var(--panel-border);
             border-radius: 20px; padding: 2rem; max-width: 450px; width: 90%;
             transform: translateY(20px); transition: transform 0.3s;
         }
         .modal-overlay.active .modal-content { transform: translateY(0); }
-
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
         .close-btn:hover { color: white; }
 
         .step-item { display: flex; gap: 1rem; margin-bottom: 1rem; }
         .step-num {
-            background: var(--primary); color: white; width: 28px; height: 28px;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 0.85rem; font-weight: bold; flex-shrink: 0;
+            background: var(--primary); color: white; width: 28px; height: 28px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0;
         }
         .step-text { font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; }
 
-        /* Toast Notification */
+        /* Toast */
         .toast {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--success); color: white; padding: 0.75rem 1.5rem;
-            border-radius: 99px; font-weight: 500; font-size: 0.95rem;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 2000;
+            background: var(--success); color: white; padding: 0.75rem 1.5rem; border-radius: 99px;
+            font-weight: 500; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000;
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
         .toast.error { background: var(--danger); box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5); }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <!-- Setup Panel -->
-        <div class="panel">
-            <h2><i class="fa-solid fa-gear"></i> Setup Manager</h2>
-            <p class="subtitle">Connect your Gmail to start receiving OTP codes automatically.</p>
-            
-            <div class="form-group">
-                <label>Gmail Address</label>
-                <div class="input-wrapper">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="email" id="mainEmail" placeholder="your.email@gmail.com" autocomplete="off">
+    <!-- 1. Login View -->
+    <div id="login-view">
+        <div class="login-card">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>10k Maile Secure</h2>
+            <p class="subtitle" style="margin-bottom:0">Authenticate with Firebase to securely sync your vault data to Cloudflare.</p>
+            <button class="btn-google" id="googleLoginBtn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Sign in with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Main Dashboard View -->
+    <div id="dashboard-view">
+        <div class="container">
+            <!-- Setup Panel -->
+            <div class="panel">
+                <div class="profile-badge" id="profileBadge" onclick="logout()" title="Click to logout">
+                    <img id="userPhoto" src="" alt="">
+                    <span id="userName">User</span>
                 </div>
+
+                <h2><i class="fa-solid fa-gear"></i> Setup Manager</h2>
+                <p class="subtitle">Connect your Gmail to start receiving OTP codes automatically.</p>
+                
+                <div class="form-group">
+                    <label>Gmail Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="mainEmail" placeholder="your.email@gmail.com" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="label-wrap">
+                        <label>App Password (16-digits)</label>
+                        <i class="fa-solid fa-circle-info info-icon" onclick="openModal('infoModal')" title="How to get this?"></i>
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="mainPassword" placeholder="abcd efgh ijkl mnop">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button id="startBtn" class="primary" onclick="toggleMonitor()">
+                        <i class="fa-solid fa-link"></i> Connect & Start Monitor
+                    </button>
+                    <button class="secondary" onclick="generateEmails()">
+                        <i class="fa-solid fa-bolt"></i> Create New Bypass Emails
+                    </button>
+                </div>
+
+                <div id="emailList" class="generated-emails"></div>
             </div>
 
-            <div class="form-group">
-                <div class="label-wrap">
-                    <label>App Password (16-digits)</label>
-                    <i class="fa-solid fa-circle-info info-icon" onclick="openModal()" title="How to get this?"></i>
+            <!-- Dashboard Panel -->
+            <div class="panel">
+                <div class="dashboard-header">
+                    <h2><i class="fa-solid fa-inbox"></i> Live Inbox</h2>
+                    <div id="monitorStatus" class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span id="statusText">Disconnected</span>
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-key"></i>
-                    <input type="password" id="mainPassword" placeholder="abcd efgh ijkl mnop">
+
+                <div id="otpContainer" class="otp-list">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <h3>Secure Mailbox</h3>
+                        <p style="margin-top:0.5rem;">Waiting for connection...</p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="btn-group">
-                <button id="startBtn" class="primary" onclick="toggleMonitor()">
-                    <i class="fa-solid fa-link"></i> Connect & Start Monitor
-                </button>
-                <button class="secondary" onclick="generateEmails()">
-                    <i class="fa-solid fa-bolt"></i> Create New Bypass Emails
-                </button>
-            </div>
-
-            <div id="emailList" class="generated-emails">
-                <!-- Generated emails list -->
             </div>
         </div>
-
-        <!-- Dashboard Panel -->
-        <div class="panel">
-            <div class="dashboard-header">
-                <h2><i class="fa-solid fa-inbox"></i> Live Inbox</h2>
-                <div id="monitorStatus" class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span id="statusText">Disconnected</span>
-                </div>
-            </div>
-
-            <div id="otpContainer" class="otp-list">
-                <div class="empty-state">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <h3>Secure Mailbox</h3>
-                    <p style="margin-top:0.5rem;">Waiting for connection...</p>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <!-- Instruction Modal -->
@@ -370,16 +298,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 style="font-weight: 600;"><i class="fa-solid fa-key"></i> How to get App Password</h3>
-                <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+                <button class="close-btn" onclick="closeModal('infoModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
             <div class="step-item">
                 <div class="step-num">1</div>
-                <div class="step-text">Go to your <a href="https://myaccount.google.com/security" target="_blank" style="color:var(--primary)">Google Account Security</a> settings.</div>
+                <div class="step-text">Go to your <a href="https://myaccount.google.com/security" target="_blank" style="color:var(--primary)">Google Account Security</a>.</div>
             </div>
             <div class="step-item">
                 <div class="step-num">2</div>
-                <div class="step-text">Make sure <b>2-Step Verification</b> is turned ON.</div>
+                <div class="step-text">Turn ON <b>2-Step Verification</b>.</div>
             </div>
             <div class="step-item">
                 <div class="step-num">3</div>
@@ -387,32 +314,180 @@
             </div>
             <div class="step-item">
                 <div class="step-num">4</div>
-                <div class="step-text">Create a new app (name it anything), copy the 16-letter code, and paste it here.</div>
+                <div class="step-text">Create a new app, copy the 16-letter code, and paste it here.</div>
             </div>
+            <button class="primary" style="margin-top: 1.5rem;" onclick="closeModal('infoModal')">Understood</button>
+        </div>
+    </div>
+
+    <!-- Vault Save Modal -->
+    <div class="modal-overlay" id="vaultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-weight: 600; color: #8b5cf6;"><i class="fa-solid fa-vault"></i> Save to Vault</h3>
+                <button class="close-btn" onclick="closeModal('vaultModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="subtitle" style="margin-top:-10px;">Email: <span id="vaultEmailDisplay" style="color:white;font-weight:600;"></span></p>
             
-            <button class="primary" style="margin-top: 1.5rem;" onclick="closeModal()">Understood</button>
+            <div class="form-group">
+                <label>Website Name</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-globe"></i>
+                    <input type="text" id="vaultSite" placeholder="e.g. Apkpure">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>URL (Optional)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-link"></i>
+                    <input type="text" id="vaultUrl" placeholder="https://apkpure.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Account Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="vaultPassword" placeholder="Strong Password">
+                </div>
+            </div>
+            <button class="primary" style="margin-top: 0.5rem; background:#8b5cf6; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);" onclick="saveToVault()">Save Securely</button>
         </div>
     </div>
 
     <!-- Toast -->
     <div id="toast" class="toast">Connected Successfully!</div>
 
-    <script>
-        let pollInterval;
+    <!-- Firebase SDK (v10 modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // User provided config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcX6HQ3Mg9BhgD_J5V5-y4hxkmSfSwPHY",
+            authDomain: "kmaile-7c2e9.firebaseapp.com",
+            projectId: "kmaile-7c2e9",
+            storageBucket: "kmaile-7c2e9.firebasestorage.app",
+            messagingSenderId: "641705553810",
+            appId: "1:641705553810:web:162ba663d2d63746311b4b",
+            measurementId: "G-LXP9Y2VJ06"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUserUid = null;
+        const CLOUDFLARE_WORKER_URL = "https://10kmaile.nayem544-gaxi.workers.dev/";
+
+        // DOM Elements
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        
+        // Expose functions to global scope for HTML inline handlers
+        window.loginWithGoogle = () => {
+            signInWithPopup(auth, provider).catch(err => window.showToast("Login Failed: " + err.message, true));
+        };
+        document.getElementById('googleLoginBtn').addEventListener('click', window.loginWithGoogle);
+
+        window.logout = () => signOut(auth);
+
+        // Auth State Observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginView.style.display = 'none';
+                dashboardView.style.display = 'block';
+                
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+                document.getElementById('userPhoto').src = user.photoURL;
+                
+                window.showToast(`Welcome back, ${user.displayName}!`);
+                loadSetupData();
+            } else {
+                currentUserUid = null;
+                loginView.style.display = 'flex';
+                dashboardView.style.display = 'none';
+                if(window.pollInterval) clearInterval(window.pollInterval);
+            }
+        });
+
+        // ----------------------------------------------------
+        // Cloudflare Integration
+        // ----------------------------------------------------
+        async function fetchFromCloudflare(action, payload = {}) {
+            if(!currentUserUid) return null;
+            try {
+                const res = await fetch(CLOUDFLARE_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUserUid, action: action, data: payload })
+                });
+                return await res.json();
+            } catch(e) { console.error("Cloudflare Error:", e); return null; }
+        }
+
+        async function loadSetupData() {
+            // Ask cloudflare for saved email/app password
+            const data = await fetchFromCloudflare("get_setup");
+            if(data && data.email) {
+                document.getElementById('mainEmail').value = data.email;
+                document.getElementById('mainPassword').value = data.appPassword;
+            }
+        }
+
+        async function saveSetupData(email, appPassword) {
+            await fetchFromCloudflare("save_setup", { email, appPassword });
+        }
+
+        // Vault Logic
+        let currentVaultEmail = "";
+        window.openVaultModal = (email) => {
+            currentVaultEmail = email;
+            document.getElementById('vaultEmailDisplay').innerText = email;
+            document.getElementById('vaultSite').value = "";
+            document.getElementById('vaultUrl').value = "";
+            document.getElementById('vaultPassword').value = "";
+            window.openModal('vaultModal');
+        };
+
+        window.saveToVault = async () => {
+            const site = document.getElementById('vaultSite').value;
+            const url = document.getElementById('vaultUrl').value;
+            const pass = document.getElementById('vaultPassword').value;
+            
+            if(!site || !pass) return window.showToast("Website Name and Password required!", true);
+
+            const btn = document.querySelector('#vaultModal button.primary');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            
+            const res = await fetchFromCloudflare("save_vault", {
+                email: currentVaultEmail, website: site, url: url, password: pass, date: new Date().toISOString()
+            });
+
+            btn.innerHTML = 'Save Securely';
+            window.closeModal('vaultModal');
+            window.showToast("Saved to Cloudflare Vault!");
+        };
+
+        // ----------------------------------------------------
+        // Core App Logic
+        // ----------------------------------------------------
+        window.pollInterval = null;
         let isRunning = false;
         let allOtps = [];
 
-        function showToast(msg, isError = false) {
+        window.showToast = (msg, isError = false) => {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.className = 'toast show ' + (isError ? 'error' : '');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
+        };
 
-        function openModal() { document.getElementById('infoModal').classList.add('active'); }
-        function closeModal() { document.getElementById('infoModal').classList.remove('active'); }
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
 
-        async function toggleMonitor() {
+        window.toggleMonitor = async () => {
             const btn = document.getElementById('startBtn');
             const status = document.getElementById('monitorStatus');
             const statusText = document.getElementById('statusText');
@@ -420,30 +495,25 @@
             const password = document.getElementById('mainPassword').value.trim();
 
             if (!isRunning) {
-                if (!email || !password) return showToast('Email and Password required', true);
+                if (!email || !password) return window.showToast('Email and Password required', true);
                 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
                 
-                // 1. Verify Connection first
                 try {
                     const res = await fetch('/api/verify_connection', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({email, password})
                     });
-                    
                     const data = await res.json();
                     
                     if (data.status === 'success') {
-                        showToast('Email Connected Successfully!');
+                        window.showToast('Email Connected!');
+                        saveSetupData(email, password); // Save to Cloudflare
                         
                         isRunning = true;
                         btn.innerHTML = '<i class="fa-solid fa-stop"></i> Stop Monitor';
-                        btn.classList.remove('primary');
-                        btn.classList.add('danger');
-                        
-                        status.classList.add('active');
-                        statusText.innerText = 'Listening for OTPs...';
+                        btn.classList.remove('primary'); btn.classList.add('danger');
+                        status.classList.add('active'); statusText.innerText = 'Listening for OTPs...';
                         
                         document.getElementById('otpContainer').innerHTML = `
                             <div class="empty-state">
@@ -453,34 +523,29 @@
                             </div>
                         `;
 
-                        // 2. Start polling
-                        checkEmails(email, password);
-                        pollInterval = setInterval(() => checkEmails(email, password), 5000);
+                        window.checkEmails(email, password);
+                        window.pollInterval = setInterval(() => window.checkEmails(email, password), 5000);
                     } else {
-                        showToast(data.message || 'Connection Failed', true);
+                        window.showToast(data.message || 'Connection Failed', true);
                         btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
                     }
                 } catch (err) {
-                    showToast('Server Error. Make sure backend is running.', true);
+                    window.showToast('Server Error. Make sure backend is running.', true);
                     btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
                 }
-
             } else {
                 isRunning = false;
                 btn.innerHTML = '<i class="fa-solid fa-link"></i> Connect & Start Monitor';
-                btn.classList.remove('danger');
-                btn.classList.add('primary');
-                
-                status.classList.remove('active');
-                statusText.innerText = 'Disconnected';
-                clearInterval(pollInterval);
-                showToast('Monitor Stopped');
+                btn.classList.remove('danger'); btn.classList.add('primary');
+                status.classList.remove('active'); statusText.innerText = 'Disconnected';
+                clearInterval(window.pollInterval);
+                window.showToast('Monitor Stopped');
             }
-        }
+        };
 
-        async function generateEmails() {
+        window.generateEmails = async () => {
             const email = document.getElementById('mainEmail').value.trim();
-            if (!email) return showToast('Enter your Gmail address first', true);
+            if (!email) return window.showToast('Enter your Gmail address first', true);
 
             const btn = document.querySelector('.secondary');
             const originalHtml = btn.innerHTML;
@@ -488,11 +553,9 @@
 
             try {
                 const res = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({email})
                 });
-                
                 const data = await res.json();
                 const list = document.getElementById('emailList');
                 list.innerHTML = '';
@@ -501,38 +564,40 @@
                     const div = document.createElement('div');
                     div.className = 'email-item';
                     div.innerHTML = `
-                        <span>${e}</span>
-                        <button class="copy-btn" onclick="copyToClipboard('${e}', this)" title="Copy">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
+                        <span class="email-text">${e}</span>
+                        <div class="action-btns">
+                            <button class="icon-btn vault-btn" onclick="openVaultModal('${e}')" title="Save to Vault">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <button class="icon-btn" onclick="copyToClipboard('${e}', this)" title="Copy">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
                     `;
                     list.appendChild(div);
                 });
                 list.style.display = 'block';
-                showToast(`${data.emails.length} Bypass Emails Created!`);
+                window.showToast(`${data.emails.length} Emails Created!`);
             } catch (err) {
-                showToast('Error generating emails', true);
+                window.showToast('Error generating emails', true);
             } finally {
                 btn.innerHTML = originalHtml;
             }
-        }
+        };
 
-        function copyToClipboard(text, btnElement) {
+        window.copyToClipboard = (text, btnElement) => {
             navigator.clipboard.writeText(text);
             const icon = btnElement.querySelector('i');
-            icon.className = 'fa-solid fa-check';
-            icon.style.color = 'var(--success)';
+            icon.className = 'fa-solid fa-check'; icon.style.color = 'var(--success)';
             setTimeout(() => { icon.className = 'fa-regular fa-copy'; icon.style.color = ''; }, 2000);
-        }
+        };
 
-        async function checkEmails(email, password) {
+        window.checkEmails = async (email, password) => {
             try {
                 const res = await fetch('/api/check_emails', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({email, password})
                 });
-                
                 const data = await res.json();
                 
                 if (data.status === 'success' && data.otps.length > 0) {
@@ -542,16 +607,16 @@
                         if (!exists) {
                             allOtps.unshift(newOtp);
                             newFound = true;
+                            // Optionally send OTP history to cloudflare here
+                            fetchFromCloudflare("save_otp_history", newOtp);
                         }
                     });
-                    if (newFound) renderOtps();
+                    if (newFound) window.renderOtps();
                 }
-            } catch (err) {
-                console.error("Polling error:", err);
-            }
-        }
+            } catch (err) { console.error("Polling error:", err); }
+        };
         
-        function renderOtps() {
+        window.renderOtps = () => {
             const container = document.getElementById('otpContainer');
             if (allOtps.length > 0) {
                 container.innerHTML = '';
@@ -567,7 +632,7 @@
                     `;
                 });
             }
-        }
+        };
     </script>
 </body>
 </html>
