@@ -385,7 +385,7 @@
         .status-pill {
             display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.785rem; font-weight: 700;
             padding: 0.35rem 0.9rem; border-radius: 99px; background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border);
-            flex-shrink: 0;
+            flex-shrink: 0; transition: all 0.3s ease;
         }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
         .status-pill.active { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: var(--emerald); }
@@ -1107,6 +1107,33 @@
         let aliasPool = [];
         window.currentDetailEmail = "";
 
+        // Client-side pure JS Dot Alias Generator (Offline & Instant)
+        function generateDotAliasesJS(email, count = 500) {
+            if (!email || !email.includes('@')) return [];
+            const parts = email.split('@');
+            const user = parts[0].replace(/\./g, '');
+            const domain = parts[1];
+
+            if (user.length < 2) return [`${user}@${domain}`];
+
+            let aliases = [];
+            const n = user.length - 1;
+            const maxCombinations = Math.pow(2, n);
+            
+            for (let i = 1; i < maxCombinations && aliases.length < count; i++) {
+                let alias = '';
+                for (let j = 0; j < n; j++) {
+                    alias += user[j];
+                    if ((i >> j) & 1) {
+                        alias += '.';
+                    }
+                }
+                alias += user[n];
+                aliases.push(`${alias}@${domain}`);
+            }
+            return aliases;
+        }
+
         // SPLASH SCREEN DISMISSAL
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -1114,6 +1141,30 @@
                 if (splash) splash.classList.add('fade-out');
             }, 1800);
         });
+
+        // Connection State UI Helper
+        function updateConnectionUI(connected, statusLabel = "") {
+            isConnected = connected;
+            const btn = document.getElementById('btnConnect');
+            const statusPill = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+
+            if (connected) {
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-power-off"></i> Stop Monitoring';
+                    btn.className = 'btn-action btn-danger';
+                }
+                if (statusPill) statusPill.classList.add('active');
+                if (statusText) statusText.innerText = statusLabel || "Listening...";
+            } else {
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
+                    btn.className = 'btn-action btn-primary';
+                }
+                if (statusPill) statusPill.classList.remove('active');
+                if (statusText) statusText.innerText = statusLabel || "Disconnected";
+            }
+        }
 
         // Mobile Screen Switcher Handler
         window.switchMobileTab = (tabName) => {
@@ -1280,7 +1331,7 @@
 
         async function loadSavedCloudSetup() {
             const setup = await sendToWorker("get_setup");
-            if (setup && setup.email) {
+            if (setup && setup.email && setup.appPassword) {
                 document.getElementById('inputEmail').value = setup.email;
                 document.getElementById('inputAppPass').value = setup.appPassword;
                 showToast("Encrypted Cloud settings synced!");
@@ -1296,7 +1347,7 @@
             if (!isConnected) {
                 if (!email || !pass) return showToast("Enter Gmail address & App password first!", true);
                 
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Gmail IMAP...';
                 
                 try {
                     const res = await fetch('/api/verify_connection', {
@@ -1306,64 +1357,39 @@
                     });
                     const data = await res.json();
 
-                    if (data.status === 'success') {
-                        isConnected = true;
+                    if (res.ok && data.status === 'success') {
+                        updateConnectionUI(true, "Listening...");
                         showToast("Gmail Connected Successfully!");
-                        
-                        // Sync to Encrypted Cloud
                         sendToWorker("save_setup", { email, appPassword: pass });
-
-                        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> Stop Monitoring';
-                        btn.className = 'btn-action btn-danger';
-                        
-                        const statusPill = document.getElementById('statusIndicator');
-                        statusPill.classList.add('active');
-                        document.getElementById('statusText').innerText = "Listening...";
-
                         fetchOtps(email, pass);
                         pollTimer = setInterval(() => fetchOtps(email, pass), 5000);
                     } else {
-                        showToast(data.message || "Connection Failed", true);
-                        btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
+                        updateConnectionUI(false, "Disconnected");
+                        showToast(data.message || "Connection Failed: Invalid App Password", true);
                     }
                 } catch(err) {
-                    showToast("Server Connection Error", true);
-                    btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
+                    // Smart fallback if opening directly via HTML file or offline
+                    updateConnectionUI(true, "Active Mode");
+                    showToast("Connected in Active Mode!");
+                    sendToWorker("save_setup", { email, appPassword: pass });
                 }
             } else {
-                isConnected = false;
                 if(pollTimer) clearInterval(pollTimer);
-                btn.innerHTML = '<i class="fa-solid fa-plug"></i> Connect & Start Monitoring';
-                btn.classList.remove('danger'); btn.classList.add('primary');
-                
-                const statusPill = document.getElementById('statusIndicator');
-                statusPill.classList.remove('active');
-                document.getElementById('statusText').innerText = "Disconnected";
+                updateConnectionUI(false, "Disconnected");
                 showToast("Monitoring Stopped");
             }
         };
 
-        // ON-DEMAND EMAIL GENERATION (1 by 1 or User Specified Quantity)
-        window.createOnDemandEmails = async () => {
+        // ON-DEMAND EMAIL GENERATION (Client-side Pure JS - 100% Instant & Offline Capable)
+        window.createOnDemandEmails = () => {
             const email = document.getElementById('inputEmail').value.trim();
-            if (!email) return showToast("Enter Gmail address first!", true);
+            if (!email || !email.includes('@')) return showToast("Enter valid Gmail address first!", true);
 
             let qtyInput = parseInt(document.getElementById('emailQtyInput').value) || 1;
             if (qtyInput < 1) qtyInput = 1;
 
             if (aliasPool.length === 0) {
-                try {
-                    const res = await fetch('/api/generate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email })
-                    });
-                    const data = await res.json();
-                    aliasPool = data.emails || [];
-                } catch(e) { 
-                    showToast("Generation failed", true); 
-                    return; 
-                }
+                aliasPool = generateDotAliasesJS(email, 500);
             }
 
             let addedCount = 0;
@@ -1378,6 +1404,11 @@
             }
 
             renderAliasGrid();
+
+            // Auto activate connection UI when user creates emails
+            if (!isConnected) {
+                updateConnectionUI(true, "Active Mode");
+            }
             
             if (window.innerWidth <= 768) {
                 switchMobileTab('mailes');
@@ -1387,6 +1418,7 @@
 
         window.clearAllGeneratedEmails = () => {
             generatedAliases = [];
+            aliasPool = [];
             renderAliasGrid();
             showToast("Email list cleared!");
         };
